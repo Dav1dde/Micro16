@@ -25,7 +25,10 @@ exports = class Parser
 
     parse: (text) =>
         line = null
-        $.each text.split('\n'), (i, line) =>
+        lines = text.split('\n')
+        if lines.length > 256 then throw { name: "Error", message: "Instructions exceeding rom!" }
+
+        $.each lines, (i, line) =>
             origLine = line;
             line = trim(line.replace(/#.*/g, ""))
 
