@@ -22,15 +22,16 @@ exports = class Parser
             origLine = line;
             line = trim(line.replace(/#.*/g, ""))
 
+            # Remove labels, labels must be at the end!
+            if LABEL_RE.test(line)
+                label = line.match(LABEL_RE)
+                line = line.replace(LABEL_RE, "")
+                if @label[label[1]] then throw { name: "SyntaxError", message: "Redefined label", line: i }
+                @label[label[1]] = i
+
             if line.length == 0
                 @parsedLines.push {}
                 return
-
-            # Remove labels, labels must be at the end!
-            if LABEL_RE.test(line)
-                label = LABEL_RE.match(line)
-                line = LABEL_RE.replace("")
-                @label[label[1]] = i
 
             elements = []
             for element in line.split(";")
@@ -50,7 +51,8 @@ exports = class Parser
 
             @lines.push origLine
             @parsedLines.push ins
-            @assembled.push @assemble(ins)
+
+        @assembleAll()
 
         console.log @assembled
 
@@ -88,6 +90,13 @@ exports = class Parser
 
     parse_rdwr: (element, line) ->
         return { RW: element }
+
+
+    assembleAll: ->
+        @assembled = []
+        for line in @parsedLines
+            # empty lines {} are kept with a instruction of 0s
+            @assembled.push @assemble line
 
     assemble: (ins) ->
         code = { amux: 0, cond: 0, alu: 0, sh: 0, mbr: 0, mar: 0, rdwr: 0, ms: 0, ens: 0, sbus: 0, bbus: 0, abus: 0, addr: 0 }
@@ -149,8 +158,7 @@ exports = class Parser
         return code
 
     getLocation: (target) ->
-        # TODO, assemble last, look up label here
-        return parseInt(target)
+        return parseInt(if /\.[a-zA-Z]\w+/.test(target) then @label[target.slice(1)] else target)
 
 
 

@@ -5,6 +5,7 @@ class Main
         @parser = new Parser()
 
         $("#parse").click =>
+            @parser = new Parser()
             @parser.parse $("#code").val()
 
 
