@@ -1,6 +1,13 @@
 trim = (s) -> (s or "").replace(/^\s+|\s+$/g, "")
 contains = (value, array) -> $.inArray(value, array) >= 0
 
+printBin = (num, length) ->
+    ret = num.toString(2)
+    ret = "0" + ret while ret.length < length
+    return ret
+
+
+
 WRITE_REGISTER = ["PC", "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10", "AC", "MAR", "MBR"]
 READ_REGISTER = ["0", "1", "-1"].concat(WRITE_REGISTER)
 
@@ -40,11 +47,11 @@ exports = class Parser
             ins = {}
             for element in elements
                 tmp = switch
-                    when /<-/.test(element) then @parse_load(element, line)
-                    when /^(rd|wr)$/.test(line) then @parse_rdwr(element, line)
-                    when /(rd|wr)/.test(element) then @parse_rdwr(element, line)
-                    when GOTO_RE.test(element) then @parse_goto(element, line)
-                    when ALU_RE.test(element) then @parse_alu(element, line)
+                    when /<-/.test(element) then @parseLoad(element, line)
+                    when /^(rd|wr)$/.test(line) then @parseRdwr(element, line)
+                    when /(rd|wr)/.test(element) then @parseRdwr(element, line)
+                    when GOTO_RE.test(element) then @parseGoto(element, line)
+                    when ALU_RE.test(element) then @parseAlu(element, line)
                     else throw { name: "SyntaxError", message: "SyntaxError at line: " + i, line: i }
 
                 $.extend(ins, tmp)
@@ -56,19 +63,19 @@ exports = class Parser
 
         console.log @assembled
 
-    parse_load: (element, line) ->
+    parseLoad: (element, line) ->
         s = element.split(/<-/)
         if s.length != 2 then throw { name: "SyntaxError", message: "More than one <- found", line: line }
         write = s[0]
         if !contains(write, WRITE_REGISTER) then throw { name: "SyntaxError", message: "Unknown register", line: line }
 
-        alu = @parse_alu s[1]
+        alu = @parseAlu s[1]
         alu["alu"]["S"] = write;
 
         return alu;
 
 
-    parse_alu: (element, line) ->
+    parseAlu: (element, line) ->
         alu = element.match(ALU_RE)
         if !alu then throw { name: "SyntaxError", message: "Unable to parse expression", line: line }
         if alu[2] and (alu[4] or alu[5]) then throw { name: "SyntaxError", message: "Only one operation allowed", line: line }
@@ -81,14 +88,14 @@ exports = class Parser
 
         return { alu : { A: alu[3], B: alu[5], op: alu_op }, shift: shift}
 
-    parse_goto: (element, line) ->
+    parseGoto: (element, line) ->
         g = element.match(GOTO_RE)
         if !g then throw { name: "SyntaxError", message: "Malformed goto", line: line }
 
         return { target: g[2], condition: g[1] }
 
 
-    parse_rdwr: (element, line) ->
+    parseRdwr: (element, line) ->
         return { RW: element }
 
 
@@ -100,6 +107,8 @@ exports = class Parser
 
     assemble: (ins) ->
         code = { amux: 0, cond: 0, alu: 0, sh: 0, mbr: 0, mar: 0, rdwr: 0, ms: 0, ens: 0, sbus: 0, bbus: 0, abus: 0, addr: 0 }
+
+        console.log ins
 
         if ins["alu"]
             code.alu = switch
@@ -125,8 +134,13 @@ exports = class Parser
                     code.mbr = 1
                     code.ens = 0
                 when "MAR"
+                    code.bbus = code.abus
+                    code.abus = 0
                     code.sbus = 0
-                    code.mhr = 1
+                    code.mar = 1
+                    code.ens = 0
+                when undefined
+                    code.sbus = 0
                     code.ens = 0
                 else
                     code.sbus = $.inArray(ins["alu"]["S"], READ_REGISTER)
@@ -137,7 +151,7 @@ exports = class Parser
                 when ins["shift"] == "rsh" then 2
                 else 0
 
-        code.condition = switch
+        code.cond = switch
             when ins["condition"] == "N" then 1
             when ins["condition"] == "Z" then 2
             when ins["target"] and !ins["condition"] then 3
@@ -160,7 +174,15 @@ exports = class Parser
     getLocation: (target) ->
         return parseInt(if /\.[a-zA-Z]\w+/.test(target) then @label[target.slice(1)] else target)
 
+    getFormattedIns: (join) ->
+        ret = ""
 
+        for line in @assembled
+            ret += [printBin(line.amux, 1), printBin(line.cond, 2), printBin(line.alu, 2), printBin(line.sh, 2),
+            printBin(line.mbr, 1), printBin(line.mar, 1), printBin(line.rdwr, 1), printBin(line.ms, 1), printBin(line.ens, 1),
+            printBin(line.sbus, 4), printBin(line.bbus, 4), printBin(line.abus, 4), printBin(line.addr, 8)].join(join)
+            ret += "\n"
 
+        return ret
 
 

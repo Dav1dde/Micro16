@@ -7,6 +7,7 @@ class Main
         $("#parse").click =>
             @parser = new Parser()
             @parser.parse $("#code").val()
+            $("#out").val(@parser.getFormattedIns(""))
 
 
 
