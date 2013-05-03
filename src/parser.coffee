@@ -1,3 +1,5 @@
+MIC = require 'mic'
+
 trim = (s) -> (s or "").replace(/^\s+|\s+$/g, "")
 contains = (value, array) -> $.inArray(value, array) >= 0
 
@@ -64,8 +66,6 @@ exports = class Parser
 
         @assembleAll()
 
-        console.log @assembled
-
     parseLoad: (element, line) ->
         s = element.split(/<-/)
         if s.length != 2 then throw { name: "SyntaxError", message: "More than one <- found", line: line }
@@ -101,17 +101,22 @@ exports = class Parser
     parseRdwr: (element, line) ->
         return { RW: element }
 
-
     assembleAll: ->
         @assembled = []
-        for line in @parsedLines
+        ramReady = true
+        for line, i in @parsedLines
             # empty lines {} are kept with a instruction of 0s
-            @assembled.push @assemble line
+            al = @assemble line
+
+            if !ramReady and !al.ms
+                throw { name: "SyntaxError", message: "Ram needs time to fetch data", line: i }
+
+            if al.ms then ramReady = !ramReady
+
+            @assembled.push al
 
     assemble: (ins) ->
         code = { amux: 0, cond: 0, alu: 0, sh: 0, mbr: 0, mar: 0, rdwr: 0, ms: 0, ens: 0, sbus: 0, bbus: 0, abus: 0, addr: 0 }
-
-        console.log ins
 
         if ins["alu"]
             code.alu = switch
@@ -187,5 +192,8 @@ exports = class Parser
             ret += "\n"
 
         return ret
+
+    makeMic: ->
+        return new MIC(@assembled)
 
 
