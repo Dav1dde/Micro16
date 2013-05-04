@@ -112,13 +112,7 @@ class Main
             @mic = @parser.makeMic()
 
             @mic.events.on("step", (mic, vm, addr) => @code.setGutterMarker(@mic.addr, "currentline", null))
-            @mic.events.on("stepped", (mic, vm, addr) =>
-                @updateRegistersRam()
-                element = document.createElement("div")
-                element.innerHTML = "&rarr;"
-                @code.setGutterMarker(@mic.addr, "currentline", element)
-                @updateRegistersRam()
-            )
+            @mic.events.on("stepped", (mic, vm, addr) => @updateRegistersRam())
         )
 
         $("#step").click =>
@@ -146,9 +140,12 @@ class Main
 
         $("#info").append(REGISTER_TABLE)
 
+        @setGutterMark(0)
+
 
     updateRegistersRam: ->
         if @registerVisible then @updateRegisters() else @updateRam()
+        @setGutterMark()
 
     updateRegisters: ->
         for own key, value of @mic.vm.register
@@ -162,6 +159,11 @@ class Main
         $(".m15-flag-n").text(@mic.vm.flags.Z)
 
     updateRam: ->
+
+    setGutterMark: (addr) ->
+        element = document.createElement("div")
+        element.innerHTML = "&rarr;"
+        @code.setGutterMarker((if addr? then addr else @mic.attr), "currentline", element)
 
 
 
