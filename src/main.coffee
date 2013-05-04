@@ -98,7 +98,7 @@ class Main
 
             $("#run").removeAttr("disabled")
             $("#step").removeAttr("disabled")
-            $("#stop").removeAttr("disabled")
+            $("#pause").removeAttr("disabled")
             $("#reset").removeAttr("disabled")
 
             if @lastErrorLine >= 0
@@ -111,7 +111,7 @@ class Main
 
                 $("#run").attr("disabled", "disabled")
                 $("#step").attr("disabled", "disabled")
-                $("#stop").attr("disabled", "disabled")
+                $("#pause").attr("disabled", "disabled")
                 $("#reset").attr("disabled", "disabled")
 
 
@@ -166,12 +166,12 @@ class Main
         @mic.events.on("stop", =>
             $("#step").attr("disabled", "disabled")
             $("#run").attr("disabled", "disabled")
-            $("#stop").attr("disabled", "disabled")
+            $("#pause").attr("disabled", "disabled")
         )
 
         $("#step").removeAttr("disabled")
         $("#run").removeAttr("disabled")
-        $("#stop").removeAttr("disabled")
+        $("#pause").removeAttr("disabled")
 
         @updateRegistersRam()
 
