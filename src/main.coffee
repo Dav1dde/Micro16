@@ -55,6 +55,13 @@ RAM_TABLE = '<div class="ram-options">
 </table>'
 
 
+# only for 16bit numbers!
+toDecimal = (inp) -> return ((if (inp & (1 << 15)) > 0 then 0xffff << 16 else 0) | inp).toString()
+toBin = (inp) -> return (1 << 16 | (inp & 0xffff)).toString(2).slice(1)
+toHex = (inp) ->
+    hex = (Number(inp) & 0xffff).toString(16)
+    return "0x" + ("0000".substr(0, 4 - hex.length)) + hex.toUpperCase();
+
 
 class Main
     constructor: ->
@@ -78,6 +85,12 @@ class Main
 
         @parser = new Parser()
         @mic = null
+        @convertFunc = null
+        @updateConvertFunc("binary")
+
+        @lastRegisters = ({ "0": 0, "1": 1, "-1": -1, PC: 0, R0: 0, R1: 0, R2: 0, R3: 0, R4: 0, R5: 0,
+        R6: 0, R7: 0, R8: 0, R9: 0, R10: 0, AC: 0, MBR: 0, MAR: 0 })
+        @lastFlags = {"N" : 0, "Z": 0}
 
         @lastErrorLine = -1
         @code.on("change", (cm, change) =>
@@ -109,15 +122,15 @@ class Main
                 return
 
             @asm.setValue(@parser.getFormattedIns(""))
-            @mic = @parser.makeMic()
-
-            @mic.events.on("step", (mic, vm, addr) => @code.setGutterMarker(@mic.addr, "currentline", null))
-            @mic.events.on("stepped", (mic, vm, addr) => @updateRegistersRam())
+            @makeMic()
         )
 
         $("#step").click =>
-            console.log "clicked step"
             @mic.step()
+
+        $("#reset").click =>
+            @code.setGutterMarker((if @mic? then @mic.addr else 0), "currentline", null)
+            @makeMic()
 
         @registerVisible = true
 
@@ -136,37 +149,71 @@ class Main
             @registerVisible = false
             $("#info").children().remove()
             $("#info").append(RAM_TABLE)
-
-
         $("#info").append(REGISTER_TABLE)
 
-        @setGutterMark(0)
+        @updateRegistersRam()
+
+        $(".unit-binary").click => @updateConvertFunc "binary"
+        $(".unit-decimal").click => @updateConvertFunc "decimal"
+        $(".unit-hexadecimal").click => @updateConvertFunc "hexadecimal"
+
+
+    makeMic: ->
+        @mic = @parser.makeMic()
+
+        @mic.events.on("step", => @code.setGutterMarker(@mic.addr, "currentline", null))
+        @mic.events.on("stepped", => @updateRegistersRam())
+        @mic.events.on("stop", =>
+            $("#step").attr("disabled", "disabled")
+            $("#run").attr("disabled", "disabled")
+            $("#stop").attr("disabled", "disabled")
+        )
+
+        $("#step").removeAttr("disabled")
+        $("#run").removeAttr("disabled")
+        $("#stop").removeAttr("disabled")
+
+        @updateRegistersRam()
 
 
     updateRegistersRam: ->
         if @registerVisible then @updateRegisters() else @updateRam()
-        @setGutterMark()
+        @setGutterMark(if @mic? then @mic.addr else 0)
 
     updateRegisters: ->
-        for own key, value of @mic.vm.register
+        registers = if @mic? then @mic.vm.register else @lastRegisters
+        flags = if @mic? then @mic.vm.flags else @lastFlags
+
+        for own key, value of registers
             j = $(".m16-reg-key-" + key)
             j.parent().removeClass("info")
-            if parseInt(j.text()) != value
-                j.parent().addClass("info")
-            j.text(value)
+            if @lastRegisters[key] != value then j.parent().addClass("info")
+            j.text(@convertFunc value)
 
-        $(".m15-flag-n").text(@mic.vm.flags.N)
-        $(".m15-flag-n").text(@mic.vm.flags.Z)
+        for f in ["N", "Z"]
+            j = $(".m15-flag-" + f.toLowerCase())
+            j.parent().removeClass("info")
+            if @lastFlags[f] != flags[f] then j.parent().addClass("info");
+            j.text(@convertFunc flags[f])
+
+        @lastRegisters = registers
+        @lastFlags = flags
 
     updateRam: ->
+
 
     setGutterMark: (addr) ->
         element = document.createElement("div")
         element.innerHTML = "&rarr;"
         @code.setGutterMarker((if addr? then addr else @mic.attr), "currentline", element)
 
+    updateConvertFunc: (unit) ->
+        @convertFunc = switch
+            when unit == "decimal" then toDecimal
+            when unit == "hexadecimal" then (inp) -> return toHex(toDecimal(inp))
+            else toBin
 
-
+        @updateRegistersRam()
 
 
 # main entry point
