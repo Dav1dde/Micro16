@@ -1,16 +1,18 @@
 VM = require 'vm'
 Events = require 'events'
+Clock = require 'clock'
 
 exports = class MIC
-    constructor: (code) ->
+    constructor: (code, freq) ->
         @code = code
         @addr = 0
         @vm = new VM()
+        @clock = new Clock(if freq then freq else 1)
 
         @events = new Events(@)
 
     step: ->
-        if @addr == code.length then throw { name: "MICError", message: "End of Code reached" }
+        if @isFinished() then throw { name: "MICError", message: "End of Code reached" }
 
         cl = @code[@addr]
 
@@ -28,7 +30,23 @@ exports = class MIC
 
         @events.trigger("stepped", @vm, @addr)
 
-        if @addr == code.length
+        if @addr == @code.length
+            @clock.pause()
             @events.trigger("stop")
+
+    run: =>
+        @clock.events.on("update", () => @step())
+        @clock.start()
+
+    pause: =>
+        @clock.pause()
+        @clock.events.remove()
+
+    setSpeed: (hz) =>
+        @clock.setFreq(hz)
+
+    isFinished: ->
+        return @addr == @code.length
+
 
 

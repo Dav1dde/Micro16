@@ -101,6 +101,9 @@ class Main
             $("#pause").removeAttr("disabled")
             $("#reset").removeAttr("disabled")
 
+            $(".status-text").text("Stopped")
+            $(".status-text").css("color", "green")
+
             if @lastErrorLine >= 0
                 @asm.removeLineClass(@lastErrorLine, "background")
 
@@ -114,6 +117,9 @@ class Main
                 $("#pause").attr("disabled", "disabled")
                 $("#reset").attr("disabled", "disabled")
 
+                $(".status-text").text(error.message + " | At line: " + error.line)
+                $(".status-text").css("color", "red")
+
 
                 @lastErrorLine = error.line
                 #if error.line?
@@ -122,15 +128,36 @@ class Main
                 return
 
             @asm.setValue(@parser.getFormattedIns(""))
+            @code.clearGutter("currentline")
             @makeMic()
         )
 
         $("#step").click =>
             @mic.step()
+            console.log @mic.isFinished()
+            if !@mic.isFinished() then $(".status-text").text("Paused")
 
         $("#reset").click =>
             @code.setGutterMarker((if @mic? then @mic.addr else 0), "currentline", null)
             @makeMic()
+
+        $("#run").click =>
+            @mic.run()
+            $("#run").attr("disabled", "disabled")
+            $("#step").attr("disabled", "disabled")
+            $("#pause").removeAttr("disabled")
+            $(".status-text").text("Running")
+
+        $("#pause").click =>
+            @mic.pause()
+            $("#pause").attr("disabled", "disabled")
+            $("#step").removeAttr("disabled")
+            $("#run").removeAttr("disabled")
+            $(".status-text").text("Paused")
+
+        $("#clockSpeed").change =>
+            @mic.setSpeed(parseInt($("#clockSpeed").val()))
+
 
         @registerVisible = true
 
@@ -153,12 +180,20 @@ class Main
 
         @updateRegistersRam()
 
-        $(".unit-binary").click => @updateConvertFunc "binary"
-        $(".unit-decimal").click => @updateConvertFunc "decimal"
-        $(".unit-hexadecimal").click => @updateConvertFunc "hexadecimal"
+        $(".unit-binary").click =>
+            @updateConvertFunc "binary"
+            @updateRegistersRam()
+        $(".unit-decimal").click =>
+            @updateConvertFunc "decimal"
+            @updateRegistersRam()
+        $(".unit-hexadecimal").click =>
+            @updateConvertFunc "hexadecimal"
+            @updateRegistersRam()
 
 
     makeMic: ->
+        @mic = null
+        @updateRegistersRam()
         @mic = @parser.makeMic()
 
         @mic.events.on("step", => @code.setGutterMarker(@mic.addr, "currentline", null))
@@ -167,13 +202,17 @@ class Main
             $("#step").attr("disabled", "disabled")
             $("#run").attr("disabled", "disabled")
             $("#pause").attr("disabled", "disabled")
+            $(".status-text").text("Finished")
+            console.log "Done"
         )
+
+        @mic.setSpeed(parseInt($("#clockSpeed").val()) or 1)
 
         $("#step").removeAttr("disabled")
         $("#run").removeAttr("disabled")
         $("#pause").removeAttr("disabled")
-
-        @updateRegistersRam()
+        $("#pause").attr("disabled", "disabled")
+        $(".status-text").text("Stopped")
 
 
     updateRegistersRam: ->
@@ -208,12 +247,18 @@ class Main
         @code.setGutterMarker((if addr? then addr else @mic.attr), "currentline", element)
 
     updateConvertFunc: (unit) ->
-        @convertFunc = switch
-            when unit == "decimal" then toDecimal
-            when unit == "hexadecimal" then (inp) -> return toHex(toDecimal(inp))
-            else toBin
+        $(".unit-binary").parent().parent().find("i").remove()
 
-        @updateRegistersRam()
+        switch unit
+            when "decimal"
+                $(".unit-decimal").html("Decimal <i class=\"icon-ok\">")
+                @convertFunc = toDecimal
+            when "hexadecimal"
+                $(".unit-hexadecimal").html("Hexadecimal <i class=\"icon-ok\">")
+                @convertFunc = (inp) -> return toHex(toDecimal(inp))
+            else
+                $(".unit-binary").html("Binary <i class=\"icon-ok\">")
+                @convertFunc = toBin
 
 
 # main entry point

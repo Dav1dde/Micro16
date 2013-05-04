@@ -41,12 +41,17 @@
 
     <div id="toolbar" class="container-fluid">
       <div class="row-fluid">
-        <div class="span5 mrm15"></div>
+        <div class="span5 mrm15">
+          <div class="status">
+            <span class="label label-info">Status:</span>
+            <span class="status-text" style="color: green">Ready!</span>
+          </div>
+        </div>
         <div class="span7 btn-group dropdown input-prepend">
-          <button class="btn" id="run"><i class="icon-play"></i> Run</button>
-          <button class="btn" id="step"><i class="icon-step-forward"></i> Step</button>
-          <button class="btn" id="pause"><i class="icon-pause"></i> Pause</button>
-          <button class="btn" id="reset"><i class="icon-repeat"></i> Reset</button>
+          <button class="btn" id="run" disabled="disabled"><i class="icon-play"></i> Run</button>
+          <button class="btn" id="step" disabled="disabled"><i class="icon-step-forward"></i> Step</button>
+          <button class="btn" id="pause" disabled="disabled"><i class="icon-pause"></i> Pause</button>
+          <button class="btn" id="reset" disabled="disabled"><i class="icon-repeat"></i> Reset</button>
 
           <button class="dropdown-toggle btn" data-toggle="dropdown">
             <i class="icon-question-sign"></i> Unit <span class="caret"></span>

@@ -57,7 +57,7 @@ exports = class Parser
                     when /(rd|wr)/.test(element) then @parseRdwr(element, i)
                     when GOTO_RE.test(element) then @parseGoto(element, i)
                     when ALU_RE.test(element) then @parseAlu(element, i)
-                    else throw { name: "SyntaxError", message: "SyntaxError at line: " + i, line: i }
+                    else throw { name: "SyntaxError", message: "SyntaxError", line: i }
 
                 $.extend(ins, tmp)
 
