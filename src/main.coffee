@@ -140,7 +140,9 @@ class Main
 
         $("#reset").click =>
             @code.setGutterMarker((if @mic? then @mic.addr else 0), "currentline", null)
+            @mic.pause()
             @makeMic()
+            @updateRegistersRam()
 
         $("#run").click =>
             @mic.run()
