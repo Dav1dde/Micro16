@@ -21,7 +21,7 @@ exports = class VM
 
         # A and amux
         A = switch
-            when code.amux == 1 and code.rdwrd == 1 then "MBR"
+            when code.amux == 1 and code.rdwr == 1 then "MBR"
             when code.amux == 1 then
             else READ_REGISTER[code.abus]
 
@@ -33,7 +33,10 @@ exports = class VM
             @register.MAR = @register[B]
 
         if code.sbus < 3 and code.ens then throw { name: "VMError", message: "Tried to write into readonly register" }
-        S = READ_REGISTER[code.sbus]
+
+        S = switch
+            when code.ens then READ_REGISTER[code.sbus]
+            when !code.ens and code.mbr then "MBR"
 
         # ALU operations:
         # 0 | 0 0 | R <- A
@@ -69,13 +72,12 @@ exports = class VM
         shiftResult = shiftOp(aluResult)
 
         # write output to register
-        if code.ens then @register[S] = shiftResult
-        if code.mbr and code.rdwr then @register["MBR"] = shiftResult
+        @register[S] = shiftResult
 
         # io
         if code.ms
             if code.rdwr == 0 # write
-                @ram.write(@register["MBR"])
+                @ram.write(@register["MAR"], @register["MBR"])
             else # ram
                 @ram.read(@register)
         else

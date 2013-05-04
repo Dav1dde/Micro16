@@ -26,32 +26,32 @@ REGISTER_TABLE = '<table class="table table-condensed" id="reg-table">
 </table>'
 
 RAM_TABLE = '<div class="ram-options">
-    <input type="checkbox" name="ramautojump">Autojump to last modification</input>
+    <input type="checkbox" name="ramautojump" id="ramautojump">Autojump to last modification</input>
 </div>
 
 <div class="ram-jump-to">
   <div class="pre-input">Jump To: </div>
-  <div class="input-right"><input type="text" placeholder="Address"></text></div>
+  <div class="input-right"><input type="text" placeholder="Address" id="ram-addr"></text></div>
 </div>
 
 <table class="table table-condensed" id="ram-table">
     <tr><th class="first-col-ram">Address</th><th>Value</th></tr>
-    <tr><td><span>0x0000</span>0000000000000000</td><td class="m16-reg-key-0">0000000000000000</td></tr>
-    <tr><td><span>0x0000</span>0000000000000000</td><td class="m16-reg-key-1">0000000000000000</td></tr>
-    <tr><td><span>0x0000</span>0000000000000000</td><td class="m16-reg-key-2">0000000000000000</td></tr>
-    <tr><td><span>0x0000</span>0000000000000000</td><td class="m16-reg-key-3">0000000000000000</td></tr>
-    <tr><td><span>0x0000</span>0000000000000000</td><td class="m16-reg-key-4">0000000000000000</td></tr>
-    <tr><td><span>0x0000</span>0000000000000000</td><td class="m16-reg-key-5">0000000000000000</td></tr>
-    <tr><td><span>0x0000</span>0000000000000000</td><td class="m16-reg-key-6">0000000000000000</td></tr>
-    <tr><td><span>0x0000</span>0000000000000000</td><td class="m16-reg-key-7">0000000000000000</td></tr>
-    <tr><td><span>0x0000</span>0000000000000000</td><td class="m16-reg-key-8">0000000000000000</td></tr>
-    <tr><td><span>0x0000</span>0000000000000000</td><td class="m16-reg-key-9">0000000000000000</td></tr>
-    <tr><td><span>0x0000</span>0000000000000000</td><td class="m16-reg-key-10">0000000000000000</td></tr>
-    <tr><td><span>0x0000</span>0000000000000000</td><td class="m16-reg-key-11">0000000000000000</td></tr>
-    <tr><td><span>0x0000</span>0000000000000000</td><td class="m16-reg-key-12">0000000000000000</td></tr>
-    <tr><td><span>0x0000</span>0000000000000000</td><td class="m16-reg-key-13">0000000000000000</td></tr>
-    <tr><td><span>0x0000</span>0000000000000000</td><td class="m16-reg-key-14">0000000000000000</td></tr>
-    <tr><td><span>0x0000</span>0000000000000000</td><td class="m16-reg-key-15">0000000000000000</td></tr>
+    <tr class="m16-ram-0"><td><span>0x0000</span><span>0000000000000000</span></td><td>0000000000000000</td></tr>
+    <tr class="m16-ram-1"><td><span>0x0000</span><span>0000000000000000</span></td><td>0000000000000000</td></tr>
+    <tr class="m16-ram-2"><td><span>0x0000</span><span>0000000000000000</span></td><td>0000000000000000</td></tr>
+    <tr class="m16-ram-3"><td><span>0x0000</span><span>0000000000000000</span></td><td>0000000000000000</td></tr>
+    <tr class="m16-ram-4"><td><span>0x0000</span><span>0000000000000000</span></td><td>0000000000000000</td></tr>
+    <tr class="m16-ram-5"><td><span>0x0000</span><span>0000000000000000</span></td><td>0000000000000000</td></tr>
+    <tr class="m16-ram-6"><td><span>0x0000</span><span>0000000000000000</span></td><td>0000000000000000</td></tr>
+    <tr class="m16-ram-7"><td><span>0x0000</span><span>0000000000000000</span></td><td>0000000000000000</td></tr>
+    <tr class="m16-ram-8"><td><span>0x0000</span><span>0000000000000000</span></td><td>0000000000000000</td></tr>
+    <tr class="m16-ram-9"><td><span>0x0000</span><span>0000000000000000</span></td><td>0000000000000000</td></tr>
+    <tr class="m16-ram-10"><td><span>0x0000</span><span>0000000000000000</span></td><td>0000000000000000</td></tr>
+    <tr class="m16-ram-11"><td><span>0x0000</span><span>0000000000000000</span></td><td>0000000000000000</td></tr>
+    <tr class="m16-ram-12"><td><span>0x0000</span><span>0000000000000000</span></td><td>0000000000000000</td></tr>
+    <tr class="m16-ram-13"><td><span>0x0000</span><span>0000000000000000</span></td><td>0000000000000000</td></tr>
+    <tr class="m16-ram-14"><td><span>0x0000</span><span>0000000000000000</span></td><td>0000000000000000</td></tr>
+    <tr class="m16-ram-15"><td><span>0x0000</span><span>0000000000000000</span></td><td>0000000000000000</td></tr>
 </table>'
 
 
@@ -91,6 +91,8 @@ class Main
         @lastRegisters = ({ "0": 0, "1": 1, "-1": -1, PC: 0, R0: 0, R1: 0, R2: 0, R3: 0, R4: 0, R5: 0,
         R6: 0, R7: 0, R8: 0, R9: 0, R10: 0, AC: 0, MBR: 0, MAR: 0 })
         @lastFlags = {"N" : 0, "Z": 0}
+
+        @ramStartPos = 0
 
         @lastErrorLine = -1
         @code.on("change", (cm, change) =>
@@ -134,7 +136,6 @@ class Main
 
         $("#step").click =>
             @mic.step()
-            console.log @mic.isFinished()
             if !@mic.isFinished() then $(".status-text").text("Paused")
 
         $("#reset").click =>
@@ -168,6 +169,7 @@ class Main
             @registerVisible = true
             $("#info").children().remove()
             $("#info").append(REGISTER_TABLE)
+            @updateRegistersRam()
 
         $("#btn-ram").click =>
             $("#btn-ram").parent().removeClass("active")
@@ -176,6 +178,24 @@ class Main
             @registerVisible = false
             $("#info").children().remove()
             $("#info").append(RAM_TABLE)
+            @updateRegistersRam()
+
+            $("#ram-addr").keyup =>
+                text = $("#ram-addr").val()
+                if text[0] == "0" and text[1] == "x" and text.length > 2
+                    @ramStartPos = parseInt(text, 16)
+                else
+                    @ramStartPos = switch
+                        when @unitMode == "decimal" then parseInt(text, 10)
+                        when @unitMode == "hexadecimal" then parseInt(text, 16)
+                        else parseInt(text, 2)
+
+                if isNaN(@ramStartPos) and @ramStartPos?
+                    @ramStartPos = 0
+
+                @updateRegistersRam()
+
+
         $("#info").append(REGISTER_TABLE)
 
         @updateRegistersRam()
@@ -190,7 +210,6 @@ class Main
             @updateConvertFunc "hexadecimal"
             @updateRegistersRam()
 
-
     makeMic: ->
         @mic = null
         @updateRegistersRam()
@@ -203,7 +222,6 @@ class Main
             $("#run").attr("disabled", "disabled")
             $("#pause").attr("disabled", "disabled")
             $(".status-text").text("Finished")
-            console.log "Done"
         )
 
         @mic.setSpeed(parseInt($("#clockSpeed").val()) or 1)
@@ -214,9 +232,19 @@ class Main
         $("#pause").attr("disabled", "disabled")
         $(".status-text").text("Stopped")
 
+        @mic.vm.ram.events.on("write", (pos, data) =>
+            if $("input[name=ramautojump]").prop("checked")
+                @ramStartPos = pos
+                @updateRam()
+        )
+
 
     updateRegistersRam: ->
-        if @registerVisible then @updateRegisters() else @updateRam()
+        if @registerVisible
+            @updateRegisters()
+        else
+            @updateRam()
+
         @setGutterMark(if @mic? then @mic.addr else 0)
 
     updateRegisters: ->
@@ -230,7 +258,7 @@ class Main
             j.text(@convertFunc value)
 
         for f in ["N", "Z"]
-            j = $(".m15-flag-" + f.toLowerCase())
+            j = $(".m16-flag-" + f.toLowerCase())
             j.parent().removeClass("info")
             if @lastFlags[f] != flags[f] then j.parent().addClass("info");
             j.text(@convertFunc flags[f])
@@ -239,6 +267,18 @@ class Main
         @lastFlags = flags
 
     updateRam: ->
+        ram = if @mic? then @mic.vm.ram else {get: () -> 0}
+
+        console.log @ramStartPos
+
+        for i in [0..15]
+            ii = @ramStartPos+i
+
+            s = ".m16-ram-" + i
+
+            $(s + " td:last-child").text(@convertFunc ram.get(toDecimal(toBin(ii))))
+            $(s + " td:first-child span:nth-child(1)") .text(toHex(ii))
+            $(s + " td:first-child span:nth-child(2)") .text(toBin(ii))
 
 
     setGutterMark: (addr) ->
@@ -248,6 +288,8 @@ class Main
 
     updateConvertFunc: (unit) ->
         $(".unit-binary").parent().parent().find("i").remove()
+
+        @unitMode = unit
 
         switch unit
             when "decimal"
@@ -259,6 +301,7 @@ class Main
             else
                 $(".unit-binary").html("Binary <i class=\"icon-ok\">")
                 @convertFunc = toBin
+                @unitMode = "binary"
 
 
 # main entry point

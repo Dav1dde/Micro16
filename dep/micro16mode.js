@@ -10,7 +10,7 @@ CodeMirror.defineMode("micro16", function(config, parserConfig) {
                         var ch = stream.next();
 
 
-                        if(ch == ';') { stream.skipToEnd(); return "comment" }
+                        if(ch == '#') { stream.skipToEnd(); return "comment" }
                         if(ch == '<' && stream.peek() == '-') { stream.eat(/-/); return "special" }
                         if(/[&+~]/.test(ch)) { stream.eatWhile(/[&+~]/); return "operator"; }
                         if(/[\d]/.test(ch)) { stream.eatWhile(/\d/); return "number" }

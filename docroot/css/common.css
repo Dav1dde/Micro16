@@ -98,7 +98,7 @@ body {
     margin: -1px 10px 0 0;
 }
 
-#ram-table tbody tr td span {
+#ram-table tbody tr td span:first-child {
     border-right: 1px solid gray;
     padding-right: 5px;
     margin-right: 5px;
