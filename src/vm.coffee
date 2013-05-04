@@ -30,7 +30,8 @@ exports = class VM
 
         # pass contents of "bbus" to register MAR if, activated
         if code.mar
-            @register.MAR = @register[B]
+            @register["MAR"] = @register[B]
+            return
 
         if code.sbus < 3 and code.ens then throw { name: "VMError", message: "Tried to write into readonly register" }
 

@@ -11,7 +11,6 @@ exports = class Clock
         @update()
 
     update: ->
-        console.log "update"
         if !@paused
             @events.trigger("update")
             setTimeout (() => @update()), 1000/@freq

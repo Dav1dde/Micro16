@@ -269,14 +269,13 @@ class Main
     updateRam: ->
         ram = if @mic? then @mic.vm.ram else {get: () -> 0}
 
-        console.log @ramStartPos
-
         for i in [0..15]
             ii = @ramStartPos+i
 
             s = ".m16-ram-" + i
 
-            $(s + " td:last-child").text(@convertFunc ram.get(toDecimal(toBin(ii))))
+            #rotate!
+            $(s + " td:last-child").text(@convertFunc ram.get(parseInt(toDecimal(toBin(ii)), 2)))
             $(s + " td:first-child span:nth-child(1)") .text(toHex(ii))
             $(s + " td:first-child span:nth-child(2)") .text(toBin(ii))
 

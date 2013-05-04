@@ -14,8 +14,8 @@ WRITE_REGISTER = ["PC", "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R
 READ_REGISTER = ["0", "1", "-1"].concat(WRITE_REGISTER)
 
 LABEL_RE = /:(\w+)$/
-REGISTER_RE = /(R10|R\d|PC|AC|MAR|MBR)/
-ALU_RE = /(lsh|rsh\()?\(?(~)?(R10|R\d|PC|AC|MBR|\-?1|0)([+,&])?\(?(R10|R\d|PC|AC|MBR|\-?1|0)?\)?\)?/
+REGISTER_RE = /\s*(R10|R\d|PC|AC|MAR|MBR)\s*/
+ALU_RE = /(lsh|rsh\()?\(?(~)?(R10|R\d|PC|AC|MBR|\-?1|0)\s*([+,&])?\s*\(?(R10|R\d|PC|AC|MBR|\-?1|0)?\)?\)?/
 GOTO_RE = /^(?:if\s+(N|Z))?\s*goto\s+(\d+|\.[a-zA-Z]\w+)$/
 
 exports = class Parser
@@ -69,7 +69,7 @@ exports = class Parser
     parseLoad: (element, line) ->
         s = element.split(/<-/)
         if s.length != 2 then throw { name: "SyntaxError", message: "More than one <- found", line: line }
-        write = s[0]
+        write = trim(s[0])
         if !contains(write, WRITE_REGISTER) then throw { name: "SyntaxError", message: "Unknown register", line: line }
 
         alu = @parseAlu s[1], line
