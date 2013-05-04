@@ -18,6 +18,8 @@ REGISTER_TABLE = '<table class="table table-condensed" id="reg-table">
     <tr><td>R9</td><td class="m16-reg-key-R9">0</td></tr>
     <tr><td>R10</td><td class="m16-reg-key-R10">0</td></tr>
     <tr><td>AC</td><td class="m16-reg-key-AC">0</td></tr>
+    <tr><td>MAR</td><td class="m16-reg-key-MAR">0</td></tr>
+    <tr><td>MBR</td><td class="m16-reg-key-MBR">0</td></tr>
 </table>
 <table class="table table-condensed" id="flag-table">
     <tr><th class="first-col">Flag</th><th>Value</th></tr>
