@@ -1,5 +1,134 @@
-body{
+html {
+    height: 100%
+}
+
+body {
     background-color: #fff;
     font-family: sans-serif;
     color: black;
+    padding-top: 60px;
+    margin-left: 30px;
+    margin-right: 30px;
+}
+
+#dav1dde {
+    font-size: 9px;
+    padding-top: 10px;
+}
+
+#toolbar {
+    margin-bottom: 5px;
+}
+
+.clock-outer {
+    margin-top: 7px;
+}
+
+.l290 {
+    left: 290px !important;
+}
+
+
+#clockSpeed {
+}
+
+.inp-left {
+    display: inline;
+    padding-top: 2px;
+}
+
+.CodeMirror {
+    min-height: 530px;
+}
+
+.CodeMirror-scroll {
+    min-height: 530px;
+}
+
+.CodeMirror-outer {
+    border: 1px solid gray;
+    border-radius: 2px;
+    padding: 0 1px;
+}
+
+.code-error-bg {
+    background-color: red;
+}
+
+.currentline {
+    width: 10px;
+}
+
+.mrm15 {
+  margin-right: -15px;
+}
+
+.mlm15 {
+  margin-left: -15px;
+}
+
+#code-outer {}
+
+.first-col {
+    width: 20%;
+}
+
+.first-col-ram {
+    width: 50%;
+}
+
+.pre-input {
+    margin-top: 2px;
+    float: left;
+}
+
+.input-right {
+    text-align: right;
+}
+
+.input-right input {
+    height: 15px;
+}
+
+.ram-options {
+    margin-bottom: 10px;
+}
+
+.ram-options input[type=checkbox] {
+    margin: -1px 10px 0 0;
+}
+
+#ram-table tbody tr td span {
+    border-right: 1px solid gray;
+    padding-right: 5px;
+    margin-right: 5px;
+}
+
+td:first-child {
+    border-right: 1px solid gray;
+    text-align: center;
+}
+
+.minus100 {
+    width: -moz-calc(100% - 100px);
+    width: -webkit-calc(100% - 100px);
+    width: -o-calc(100% - 100px);
+    width: calc(100% - 100px);
+    float: left;
+}
+
+#flag-table td:nth-child(2), #register-table td:nth-child(2) {
+    padding-left: 10px !important;
+}
+
+#ram-table td:nth-child(2) {
+    text-align: center;
+}
+
+.table-condensed th, .table-condensed td {
+    padding: 0px 3px;
+}
+
+table {
+    font-size: 80%;
 }

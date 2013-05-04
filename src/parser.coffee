@@ -52,11 +52,11 @@ exports = class Parser
             ins = {}
             for element in elements
                 tmp = switch
-                    when /<-/.test(element) then @parseLoad(element, line)
-                    when /^(rd|wr)$/.test(line) then @parseRdwr(element, line)
-                    when /(rd|wr)/.test(element) then @parseRdwr(element, line)
-                    when GOTO_RE.test(element) then @parseGoto(element, line)
-                    when ALU_RE.test(element) then @parseAlu(element, line)
+                    when /<-/.test(element) then @parseLoad(element, i)
+                    when /^(rd|wr)$/.test(line) then @parseRdwr(element, i)
+                    when /(rd|wr)/.test(element) then @parseRdwr(element, i)
+                    when GOTO_RE.test(element) then @parseGoto(element, i)
+                    when ALU_RE.test(element) then @parseAlu(element, i)
                     else throw { name: "SyntaxError", message: "SyntaxError at line: " + i, line: i }
 
                 $.extend(ins, tmp)
@@ -72,7 +72,7 @@ exports = class Parser
         write = s[0]
         if !contains(write, WRITE_REGISTER) then throw { name: "SyntaxError", message: "Unknown register", line: line }
 
-        alu = @parseAlu s[1]
+        alu = @parseAlu s[1], line
         alu["alu"]["S"] = write;
 
         return alu;

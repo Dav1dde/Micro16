@@ -10,6 +10,8 @@
         <!-- dependencies -->
         <script src="../dep/jquery-1.9.1.min.js"></script>
         <script src="../dep/bootstrap.min.js"></script>
+        <script src="../dep/codemirror.js"></script>
+        <script src="../dep/micro16mode.js"></script>
         <script src="../dep/require.js"></script>
 
         <!-- application code hookup -->
@@ -17,11 +19,70 @@
         <script type="text/javascript">require('/main')</script>
     </head>
     <body>
-        <form>
-		    <textarea id="code"></textarea>
-		    <textarea id="out" readonly="readonly"></textarea>
-		    <a class="btn" id="parse">Parse</a>
-		    <a class="btn" id="step">Step</a>
-        </form>
+
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="#">Micro16 - PtokA <span id="dav1dde">Dav1dde</span></a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li class="active"><a href="#">Home</a></li>
+              <li><a href="#about">About</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="toolbar" class="container-fluid">
+      <div class="row-fluid">
+        <div class="span5 mrm15"></div>
+        <div class="span7 btn-group dropdown input-prepend">
+          <button class="btn" id="run"><i class="icon-play"></i> Run</button>
+          <button class="btn" id="step"><i class="icon-step-forward"></i> Step</button>
+          <button class="btn" id="stop"><i class="icon-stop"></i> Stop</button>
+          <button class="btn" id="reset"><i class="icon-repeat"></i> Reset</button>
+
+          <button class="dropdown-toggle btn" data-toggle="dropdown">
+            <i class="icon-question-sign"></i> Unit <span class="caret"></span>
+          </button>
+
+          <span class="add-on btn disabled"><i class="icon-time"></i> Speed</span>
+          <input type="number" min="1" max="10000" id="clockSpeed" placeholder="Hz">
+
+
+          <ul class="dropdown-menu l290" role="menu" aria-labelledby="dLabel">
+            <li><a>Binary</a></li>
+            <li><a>Decimal</a></li>
+            <li><a>Hexadecimal</a></li>
+          </ul>
+        </div>
+
+        </div>
+      </div>
+    </div>
+    <div class="container-fluid"></div>
+
+    <div class="container-fluid" id="outerc">
+      <div class="row-fluid contents">
+        <div class="span5 CodeMirror-outer mrm15" id="code-outer">
+          <textarea id="code"></textarea>
+        </div>
+        <div class="span3 CodeMirror-outer">
+          <textarea id="out" readonly="readonly"></textarea>
+        </div>
+        <div class="span4">
+          <ul class="nav nav-tabs">
+            <li class="active"><a href="#" id="btn-register">Register</a></li>
+            <li class=""><a href="#" id="btn-ram">Ram</a></li>
+          </ul>
+          <div id="info"></div>
+        </div>
+    </div>
     </body>
 </html>
