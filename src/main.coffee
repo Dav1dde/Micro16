@@ -175,8 +175,9 @@ class Main
             $("#run").removeAttr("disabled")
             $(".status-text").text("Paused")
 
-        $("#clockSpeed").change =>
-            @mic.setSpeed(parseInt($("#clockSpeed").val()))
+        $("#clockSpeed").keyup =>
+            value = parseInt($("#clockSpeed").val())
+            @mic.setSpeed(if value then value else 1)
 
 
         @registerVisible = true
