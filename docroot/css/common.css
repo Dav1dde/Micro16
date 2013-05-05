@@ -98,6 +98,21 @@ body {
     margin: -1px 10px 0 0;
 }
 
+.reset-reg {
+    padding: 0px 5px;
+    font-size: 9px;
+    -webkit-borde-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+    height: 18px;
+}
+
+.inj-reg {
+    padding: 0;
+    margin: 0;
+    height: 18px;
+}
+
 #ram-table tbody tr td span:first-child {
     border-right: 1px solid gray;
     padding-right: 5px;

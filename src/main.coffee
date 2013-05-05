@@ -1,7 +1,7 @@
 Parser = require 'parser'
 
 REGISTER_TABLE = '<table class="table table-condensed" id="reg-table">
-    <tr><th class="first-col">Register</th><th>Value</th></tr>
+    <tr><th class="first-col">Register</th><th>Value <a class="btn pull-right reset-reg">Reset</a></th></tr>
     <tr><td>0</td><td class="m16-reg-key-0">0</td></tr>
     <tr><td>1</td><td class="m16-reg-key-1">1</td></tr>
     <tr><td>-1</td><td class="m16-reg-key--1">-1</td></tr>
@@ -56,6 +56,9 @@ RAM_TABLE = '<div class="ram-options">
     <tr class="m16-ram-15"><td><span>0x0000</span><span>0000000000000000</span></td><td>0000000000000000</td></tr>
 </table>'
 
+EMPTY_REGISTER = ({ "0": 0, "1": 1, "-1": -1, PC: 0, R0: 0, R1: 0, R2: 0, R3: 0, R4: 0, R5: 0,
+R6: 0, R7: 0, R8: 0, R9: 0, R10: 0, AC: 0, MBR: 0, MAR: 0 })
+
 
 # only for 16bit numbers!
 toDecimal = (inp) -> return ((if (inp & (1 << 15)) > 0 then 0xffff << 16 else 0) | inp).toString()
@@ -90,8 +93,8 @@ class Main
         @convertFunc = null
         @updateConvertFunc("binary")
 
-        @lastRegisters = ({ "0": 0, "1": 1, "-1": -1, PC: 0, R0: 0, R1: 0, R2: 0, R3: 0, R4: 0, R5: 0,
-        R6: 0, R7: 0, R8: 0, R9: 0, R10: 0, AC: 0, MBR: 0, MAR: 0 })
+        @userRegister = $.extend({}, EMPTY_REGISTER)
+        @lastRegister = $.extend({}, EMPTY_REGISTER)
         @lastFlags = {"N" : 0, "Z": 0}
 
         @ramStartPos = 0
@@ -175,6 +178,58 @@ class Main
             $("#info").append(REGISTER_TABLE)
             @updateRegistersRam()
 
+            $("#reg-table tbody tr:gt(3)").dblclick (event) =>
+                Jregister = $("td:nth-child(2)", $(event.target).parent())
+                register = Jregister.attr("class").match(/\w+$/)
+
+                Jregister.text("")
+                inp = $('<input type="text" data-toggle="tooltip" class="inj-reg"></input>')
+                    .css("margin", "0")
+                    .css("padding", "0")
+                    .css("height", Jregister.height()-2 + "px")
+                    .css("width", "150px")
+                    .attr("title", "Invalid Input. Correct Unit?")
+                    .data({register: register})
+                    .appendTo(Jregister)
+
+                inp.keypress (event) =>
+                    if event.which == 13 then Jregister.click()
+
+                #inp.tooltip()
+
+            $("#reg-table tbody tr:gt(3)").click (event) =>
+                Jregister = $("td:nth-child(2)", $(event.target).parent())
+                inp = Jregister.find("input")
+                register = $("td:nth-child(1)", $(event.target).parent()).text()
+
+                text = inp.val()
+                if not text then return
+
+                value = switch
+                    when text.length > 2  and text[0] == "0" and text[1] == "x" then parseInt(text, 16) & 0xffff
+                    when @unitMode == "decimal" then parseInt(text, 10) & 0xffff
+                    when @unitMode == "hexadecimal" then parseInt(text, 16) & 0xffff
+                    when @unitMode == "binary" and not /[01]+/.test(text) then NaN
+                    else parseInt(text, 2) & 0xffff
+
+                if isNaN(value)
+                    inp.tooltip()
+                    inp.tooltip("show")
+                    setTimeout((() => inp.tooltip("destroy")), 1100)
+                    return
+
+                @userRegister[register] = value
+                reg = @userRegister
+                if @mic
+                    @mic.vm.register[register] = value
+                    reg = @mic.vm.register
+                Jregister.text(@convertFunc reg[register])
+
+            $(".reset-reg").click =>
+                @userRegister = $.extend({}, EMPTY_REGISTER)
+                @updateRegistersRam()
+
+
         $("#btn-ram").click =>
             $("#btn-ram").parent().removeClass("active")
             $("#btn-register").parent().removeClass("active")
@@ -186,23 +241,20 @@ class Main
 
             $("#ram-addr").keyup =>
                 text = $("#ram-addr").val()
-                if text[0] == "0" and text[1] == "x" and text.length > 2
-                    @ramStartPos = parseInt(text, 16)
-                else
-                    @ramStartPos = switch
-                        when @unitMode == "decimal" then parseInt(text, 10)
-                        when @unitMode == "hexadecimal" then parseInt(text, 16)
-                        else parseInt(text, 2)
+                @ramStartPos = switch
+                    when text.length > 2 and text[0] == "0" and text[1] == "x" then parseInt(text, 16) & 0xffff
+                    when @unitMode == "decimal" then parseInt(text, 10) & 0xffff
+                    when @unitMode == "hexadecimal" then parseInt(text, 16) & 0xffff
+                    when @unitMode == "binary" and not /[01]+/.test(text) then NaN
+                    else parseInt(text, 2) & 0xffff
 
                 if isNaN(@ramStartPos) and @ramStartPos?
                     @ramStartPos = 0
 
                 @updateRegistersRam()
 
-
-        $("#info").append(REGISTER_TABLE)
-
-        @updateRegistersRam()
+        # tab which is open by default
+        $("#btn-register").click()
 
         $(".unit-binary").click =>
             @updateConvertFunc "binary"
@@ -218,6 +270,7 @@ class Main
         @mic = null
         @updateRegistersRam()
         @mic = @parser.makeMic()
+        @mic.vm.register = $.extend({}, @userRegister)
 
         @mic.events.on("step", => @code.setGutterMarker(@mic.addr, "currentline", null))
         @mic.events.on("stepped", => @updateRegistersRam())
@@ -252,13 +305,13 @@ class Main
         @setGutterMark(if @mic? then @mic.addr else 0)
 
     updateRegisters: ->
-        registers = if @mic? then @mic.vm.register else @lastRegisters
+        registers = if @mic? then @mic.vm.register else @userRegister
         flags = if @mic? then @mic.vm.flags else @lastFlags
 
         for own key, value of registers
             j = $(".m16-reg-key-" + key)
             j.parent().removeClass("info")
-            if @lastRegisters[key] != value then j.parent().addClass("info")
+            if @lastRegister[key] != value then j.parent().addClass("info")
             j.text(@convertFunc value)
 
         for f in ["N", "Z"]
@@ -267,7 +320,7 @@ class Main
             if @lastFlags[f] != flags[f] then j.parent().addClass("info");
             j.text(@convertFunc flags[f])
 
-        @lastRegisters = registers
+        @lastRegister = registers
         @lastFlags = flags
 
     updateRam: ->
