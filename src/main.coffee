@@ -1,5 +1,10 @@
 Parser = require 'parser'
 
+EXAMPLE_CODE = 'IyMjIE11bHRpcGxpY2F0aW9uIG9mIHR3byBudW1iZXJzClI3PC1sc2goMSsxKQpSNzwtUjcrUjcK\nUjg8LTAKUjY8LSgxKzEpClI2PC' +
+'1SNisxCk1BUjwtUjY7cmQKcmQKUjk8LU1CUgpSNjwtUjYrMQpN\nQVI8LVI2O3JkCnJkClIxMDwtTUJSClI5PC1sc2goUjkrUjkpClI5PC1sc2goUjkrUjk' +
+'pClI5PC1s\nc2goUjkrUjkpClI5PC1sc2goUjkrUjkpCihSNyk7IGlmIFogZ290byAyNApSODwtbHNoKFI4KQoo\nflI5KTsgaWYgTiBnb3RvIDIxClI4PC' +
+'1SOCtSMTAKUjk8LWxzaChSOSkKUjc8LVI3KygtMSkKZ290\nbyAxNwpSNjwtUjYrUjYKUjY8LVI2KzEKTUFSPC1SNgpNQlI8LVI4O3dyCndy\n'
+
 REGISTER_TABLE = '<table class="table table-condensed" id="reg-table">
     <tr><th class="first-col">Register</th><th>Value</th></tr>
     <tr><td>0</td><td class="m16-reg-key-0">0</td></tr>
@@ -309,6 +314,9 @@ class Main
                     @userRam[i] = 0
                 @updateRegistersRam()
 
+        $(".load-example").click =>
+            $("#aboutModal").modal('hide')
+            @code.setValue($.base64('atob', EXAMPLE_CODE))
 
         # tab which is open by default
         $("#btn-register").click()
@@ -431,7 +439,6 @@ $ ->
         $("#ram").height(height5 * 2)
 
     $(window).resize resize
-
     resize()
 
     
