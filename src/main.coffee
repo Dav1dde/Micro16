@@ -179,6 +179,10 @@ class Main
             value = parseInt($("#clockSpeed").val())
             @mic.setSpeed(if value then value else 1)
 
+        $("#clockSpeed").change =>
+            value = parseInt($("#clockSpeed").val())
+            @mic.setSpeed(if value then value else 1)
+
 
         @registerVisible = true
 

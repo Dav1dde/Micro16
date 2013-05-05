@@ -136,6 +136,7 @@ exports = class Parser
 
             code.bbus = if ins["alu"]["B"] then $.inArray(ins["alu"]["B"], READ_REGISTER) else 0
 
+            console.log ins
             switch ins["alu"]["S"]
                 when "MBR"
                     code.sbus = 0
@@ -153,6 +154,7 @@ exports = class Parser
                 else
                     code.sbus = $.inArray(ins["alu"]["S"], READ_REGISTER)
                     code.ens = 1
+            console.log code
 
             code.sh = switch
                 when ins["shift"] == "lsh" then 1

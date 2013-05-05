@@ -18,7 +18,7 @@ exports = class MIC
 
         @events.trigger("step", cl, @addr)
 
-        @vm.step(cl)
+        @vm.step(cl, @addr)
 
         jumps = [
             () => @addr+1 # no jump

@@ -21,8 +21,7 @@ exports = class VM
 
         # A and amux
         A = switch
-            when code.amux == 1 and code.rdwr == 1 then "MBR"
-            when code.amux == 1 then
+            when code.amux == 1 then "MBR"
             else READ_REGISTER[code.abus]
 
         # B
