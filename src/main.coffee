@@ -1,7 +1,7 @@
 Parser = require 'parser'
 
 REGISTER_TABLE = '<table class="table table-condensed" id="reg-table">
-    <tr><th class="first-col">Register</th><th>Value <a class="btn pull-right reset-reg">Reset</a></th></tr>
+    <tr><th class="first-col">Register</th><th>Value</th></tr>
     <tr><td>0</td><td class="m16-reg-key-0">0</td></tr>
     <tr><td>1</td><td class="m16-reg-key-1">1</td></tr>
     <tr><td>-1</td><td class="m16-reg-key--1">-1</td></tr>
@@ -25,7 +25,8 @@ REGISTER_TABLE = '<table class="table table-condensed" id="reg-table">
     <tr><th class="first-col">Flag</th><th>Value</th></tr>
     <tr><td>N</td><td class="m16-flag-n">0</td></tr>
     <tr><td>Z</td><td class="m16-flag-z">0</td></tr>
-</table>'
+</table>
+<a class="btn pull-right btn-small clear-register">Reset Register</a>'
 
 RAM_TABLE = '<div class="ram-options">
     <input type="checkbox" name="ramautojump" id="ramautojump">Autojump to last modification</input>
@@ -54,7 +55,9 @@ RAM_TABLE = '<div class="ram-options">
     <tr class="m16-ram-13"><td><span>0x0000</span><span>0000000000000000</span></td><td>0000000000000000</td></tr>
     <tr class="m16-ram-14"><td><span>0x0000</span><span>0000000000000000</span></td><td>0000000000000000</td></tr>
     <tr class="m16-ram-15"><td><span>0x0000</span><span>0000000000000000</span></td><td>0000000000000000</td></tr>
-</table>'
+</table>
+<a class="btn pull-right btn-small clear-ram">Clear Ram</a>
+'
 
 EMPTY_REGISTER = ({ "0": 0, "1": 1, "-1": -1, PC: 0, R0: 0, R1: 0, R2: 0, R3: 0, R4: 0, R5: 0,
 R6: 0, R7: 0, R8: 0, R9: 0, R10: 0, AC: 0, MBR: 0, MAR: 0 })
@@ -96,6 +99,10 @@ class Main
         @userRegister = $.extend({}, EMPTY_REGISTER)
         @lastRegister = $.extend({}, EMPTY_REGISTER)
         @lastFlags = {"N" : 0, "Z": 0}
+
+        @userRam = new Array(Math.pow(2, 16))
+        for element, i in @userRam
+            @userRam[i] = 0
 
         @ramStartPos = 0
 
@@ -203,9 +210,8 @@ class Main
                 register = $("td:nth-child(1)", $(event.target).parent()).text()
 
                 text = inp.val()
-                if not text then return
-
                 value = switch
+                    when not text then 0
                     when text.length > 2  and text[0] == "0" and text[1] == "x" then parseInt(text, 16) & 0xffff
                     when @unitMode == "decimal" then parseInt(text, 10) & 0xffff
                     when @unitMode == "hexadecimal" then parseInt(text, 16) & 0xffff
@@ -225,7 +231,7 @@ class Main
                     reg = @mic.vm.register
                 Jregister.text(@convertFunc reg[register])
 
-            $(".reset-reg").click =>
+            $(".clear-register").click =>
                 @userRegister = $.extend({}, EMPTY_REGISTER)
                 @updateRegistersRam()
 
@@ -253,6 +259,57 @@ class Main
 
                 @updateRegistersRam()
 
+            $("#ram-table tbody tr:gt(0)").dblclick (event) =>
+                Jram = $("td:nth-child(2)", $(event.target).parent())
+                ramcol = Jram.parent().attr("class").match(/\w+$/)
+
+                Jram.text("")
+                inp = $('<input type="text" data-toggle="tooltip" class="inj-reg"></input>')
+                    .css("margin", "0")
+                    .css("padding", "0")
+                    .css("height", Jram.height()-2 + "px")
+                    .css("width", "150px")
+                    .attr("title", "Invalid Input. Correct Unit?")
+                    .data({ram: ramcol})
+                    .appendTo(Jram)
+
+                inp.keypress (event) =>
+                    if event.which == 13 then Jram.click()
+
+            $("#ram-table tbody tr:gt(0)").click (event) =>
+                Jram = $("td:nth-child(2)", $(event.target).parent())
+                inp = Jram.find("input")
+                ramAddr = $("td:nth-child(1) span:nth-child(1)", $(event.target).parent()).text()
+                ramAddr = parseInt(ramAddr, 16)
+
+                text = inp.val()
+                value = switch
+                    when not text then 0
+                    when text.length > 2  and text[0] == "0" and text[1] == "x" then parseInt(text, 16) & 0xffff
+                    when @unitMode == "decimal" then parseInt(text, 10) & 0xffff
+                    when @unitMode == "hexadecimal" then parseInt(text, 16) & 0xffff
+                    when @unitMode == "binary" and not /[01]+/.test(text) then NaN
+                    else parseInt(text, 2) & 0xffff
+
+                if isNaN(value)
+                    inp.tooltip()
+                    inp.tooltip("show")
+                    setTimeout((() => inp.tooltip("destroy")), 1100)
+                    return
+
+                @userRam[ramAddr] = value
+                ram = @userRam
+                if @mic
+                    @mic.vm.ram.ram[ramAddr] = value
+                    ram = @mic.vm.ram.ram
+                Jram.text(@convertFunc ram[ramAddr])
+
+            $(".clear-ram").click =>
+                for element, i in @userRam
+                    @userRam[i] = 0
+                @updateRegistersRam()
+
+
         # tab which is open by default
         $("#btn-register").click()
 
@@ -271,6 +328,7 @@ class Main
         @updateRegistersRam()
         @mic = @parser.makeMic()
         @mic.vm.register = $.extend({}, @userRegister)
+        @mic.vm.ram.ram = @userRam.slice()
 
         @mic.events.on("step", => @code.setGutterMarker(@mic.addr, "currentline", null))
         @mic.events.on("stepped", => @updateRegistersRam())
@@ -290,10 +348,10 @@ class Main
         $(".status-text").text("Stopped")
 
         @mic.vm.ram.events.on("write", (pos, data) =>
-            if $("input[name=ramautojump]").prop("checked")
-                @ramStartPos = pos
-                @updateRam()
+            if $("input[name=ramautojump]").prop("checked") then @ramStartPos = pos
+            @updateRegistersRam()
         )
+        @mic.vm.ram.events.on("read", (pos) => @updateRegistersRam())
 
 
     updateRegistersRam: ->
@@ -302,6 +360,7 @@ class Main
         else
             @updateRam()
 
+        @code.clearGutter("currentline")
         @setGutterMark(if @mic? then @mic.addr else 0)
 
     updateRegisters: ->
@@ -324,7 +383,7 @@ class Main
         @lastFlags = flags
 
     updateRam: ->
-        ram = if @mic? then @mic.vm.ram else {get: () -> 0}
+        ram = if @mic? then @mic.vm.ram else {get: (i) => @userRam[i]}
 
         for i in [0..15]
             ii = @ramStartPos+i

@@ -30,7 +30,7 @@ exports = class Ram
 
         objOut["MBR"] = @ram[pos]
 
-        @evemts.trigger("read", pos)
+        @events.trigger("read", pos)
 
         return true
 

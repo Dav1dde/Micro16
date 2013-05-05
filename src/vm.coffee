@@ -80,7 +80,7 @@ exports = class VM
             if code.rdwr == 0 # write
                 @ram.write(@register["MAR"], @register["MBR"])
             else # ram
-                @ram.read(@register)
+                @ram.read(@register["MAR"], @register)
         else
             # should never happen, we checked this in the parser already
             if !@ram.ready then throw { name: "VMError", message: "Slow doooown! Ram is not ready yet.", line: line }

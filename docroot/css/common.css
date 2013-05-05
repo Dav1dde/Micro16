@@ -98,6 +98,14 @@ body {
     margin: -1px 10px 0 0;
 }
 
+.clear-ram {
+    margin: -10px 10px 0 0;
+}
+
+.clear-register {
+    margin: -10px 10px 0 0;
+}
+
 .reset-reg {
     padding: 0px 5px;
     font-size: 9px;
