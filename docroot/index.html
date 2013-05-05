@@ -6,18 +6,6 @@
 
         <!-- styles -->
         <link rel="stylesheet" href="css/style.css"></link>
-
-        <!-- dependencies -->
-        <script src="../dep/jquery-1.9.1.min.js"></script>
-        <script src="../dep/jquery.base64.js"></script>
-        <script src="../dep/bootstrap.min.js"></script>
-        <script src="../dep/codemirror.js"></script>
-        <script src="../dep/micro16mode.js"></script>
-        <script src="../dep/require.js"></script>
-
-        <!-- application code hookup -->
-        <script src="code.js"></script>
-        <script type="text/javascript">require('/main')</script>
     </head>
     <body>
 
@@ -111,5 +99,19 @@
           <div id="info"></div>
         </div>
     </div>
+
+    <!-- Move JS to the bottom to speed up page loading speeds -->
+    <!-- dependencies -->
+    <script src="../dep/jquery-1.9.1.min.js"></script>
+    <script src="../dep/jquery.base64.js"></script>
+    <script src="../dep/bootstrap.min.js"></script>
+    <script src="../dep/codemirror.js"></script>
+    <script src="../dep/micro16mode.js"></script>
+    <script src="../dep/require.js"></script>
+
+    <!-- application code hookup -->
+    <script src="code.js"></script>
+    <script type="text/javascript">require('/main')</script>
+
     </body>
 </html>

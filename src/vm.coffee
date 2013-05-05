@@ -19,6 +19,9 @@ exports = class VM
         # see parser
         # code = { amux: 0, cond: 0, alu: 0, sh: 0, mbr: 0, mar: 0, rdwr: 0, ms: 0, ens: 0, sbus: 0, bbus: 0, abus: 0, addr: 0 }
 
+        @flags["N"] = 0
+        @flags["Z"] = 0
+
         # A and amux
         A = switch
             when code.amux == 1 then "MBR"
@@ -66,8 +69,8 @@ exports = class VM
         shiftOp = shiftOperations[code.sh]
 
         aluResult = aluOp(@register[A], @register[B])
-        @flags["N"] = ((aluResult >> 15) & 1) == 1 # negative flag
-        @flags["Z"] = aluResult == 0 # zero flag
+        @flags["N"] = if ((aluResult >> 15) & 1) == 1 then 1 else 0 # negative flag
+        @flags["Z"] = if aluResult == 0 then 1 else 0 # zero flag
 
         shiftResult = shiftOp(aluResult)
 
