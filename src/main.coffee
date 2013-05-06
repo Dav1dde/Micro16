@@ -152,7 +152,7 @@ class Main
                 $("#pause").attr("disabled", "disabled")
                 $("#reset").attr("disabled", "disabled")
 
-                $(".status-text").text(error.message + " | At line: " + error.line)
+                $(".status-text").text(error.message + (if error.line then " | At line: " + error.line else ""))
                 $(".status-text").css("color", "red")
 
 

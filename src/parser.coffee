@@ -28,7 +28,7 @@ exports = class Parser
     parse: (text) =>
         line = null
         lines = text.split('\n')
-        if lines.length > 256 then throw { name: "Error", message: "Instructions exceeding rom!" }
+        if lines.length > 256 then throw { name: "SyntaxError", message: "Instructions exceeding rom (max 256)!" }
 
         $.each lines, (i, line) =>
             origLine = line;
