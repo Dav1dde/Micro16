@@ -214,7 +214,7 @@ class EmulatorMain
 
             @asm.setValue(@parser.getFormattedIns(""))
             @code.clearGutter("currentline")
-            @updateBreakpointLines()
+            if change.text.length > 1 then @updateBreakpointLines()
             @makeMic()
         )
 
