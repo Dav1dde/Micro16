@@ -43,6 +43,8 @@
               <li><a id="switchDis">Disassembler</a></li>
               <li><a data-toggle="modal" data-target="#aboutModal" href="#aboutModal" id="about">About</a></li>
             </ul>
+
+            <input type="text" id="share" class="pull-right" onClick="this.select();" readonly></input>
           </div>
         </div>
       </div>
@@ -101,11 +103,13 @@
       </div>
     </div>
 
+
     <!-- Move JS to the bottom to speed up page loading speeds -->
     <!-- dependencies -->
     <script src="../dep/jquery-1.9.1.min.js"></script>
     <script src="../dep/jquery.base64.js"></script>
     <script src="../dep/bootstrap.min.js"></script>
+    <script src="../dep/hashsearch.js"></script>
     <script src="../dep/codemirror.js"></script>
     <script src="../dep/micro16mode.js"></script>
     <script src="../dep/require.js"></script>

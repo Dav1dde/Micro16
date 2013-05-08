@@ -16,6 +16,12 @@ body {
     padding-top: 10px;
 }
 
+#share {
+    margin-top: 10px;
+    opacity: 100%;
+    width: 25%;
+}
+
 .toolbar {
     margin-bottom: 5px;
 }

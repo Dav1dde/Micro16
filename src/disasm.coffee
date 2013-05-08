@@ -11,7 +11,7 @@ exports = class Disassembler
         dis = []
 
         nb = text.replace(/\r?\n/g, "").replace(/\s+/g, "")
-        if /^[0-9a-fA-F]+$/.test(nb) and (nb.length % 8) == 0
+        if /^[0-9a-fA-F]+$/.test(nb) and (nb.length % 8) == 0 and not /^[0-9]+$/.test(nb)
             lines = nb.match(/[0-9a-fA-F]{8}/g, nb)
         else
             lines = text.split('\n')

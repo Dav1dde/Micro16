@@ -201,6 +201,9 @@ class EmulatorMain
 
                 return
 
+            if @code.getValue()
+                $("#share").val(location.href.replace(/#.*$/, "") + "#&inp=" + $.base64("btoa", @code.getValue()))
+
             @asm.setValue(@parser.getFormattedIns(""))
             @code.clearGutter("currentline")
             @updateBreakpointLines()
@@ -414,6 +417,10 @@ class EmulatorMain
             @updateConvertFunc "hexadecimal"
             @updateRegistersRam()
 
+        inp = HashSearch.get("inp")
+        if inp then @code.setValue($.base64("atob", inp))
+        HashSearch.remove("inp")
+
     makeMic: ->
         @mic = null
         @updateRegistersRam()
@@ -589,6 +596,9 @@ class DisassemblerMain
 
                 return
 
+            if @disin.getValue()
+                $("#share").val(location.href.replace(/#.*$/, "") + "#disasm&inp=" + $.base64("btoa", @disin.getValue()))
+
             @disout.setValue out.join("\n")
         )
 
@@ -596,18 +606,21 @@ class DisassemblerMain
         $(".load-emu").click =>
             $("#switchEmu").click()
             window.cmCode.setValue(@disout.getValue())
-            console.log "click"
 
+        inp = HashSearch.get("inp")
+        if inp then @disin.setValue($.base64("atob", inp))
+        HashSearch.remove("inp")
 
 
 # main entry point
 $ ->
+    HashSearch.load()
+
     emulator = $("#outer").children()
     disassembler = $(DISASM_HTML)
 
-    current = "emulator"
-    cls = {emulator: new EmulatorMain()}
-    cls["emulator"].reinit()
+    current = null
+    cls = {}
 
     resize = ->
         height = $(window).height() - 120
@@ -621,7 +634,7 @@ $ ->
 
     $("#switchDis").click =>
         if current == "disassembler" then return else current = "disassembler"
-        window.location.hash = "#disasm"
+        if not HashSearch.keyExists("disasm") then HashSearch.set("disasm")
 
         $("#switchDis").parent().parent().find(".active").removeClass("active")
         $("#switchDis").parent().addClass("active")
@@ -635,7 +648,7 @@ $ ->
 
     $("#switchEmu").click =>
         if current == "emulator" then return else current = "emulator"
-        window.location.hash = ""
+        HashSearch.remove("disasm")
 
         $("#switchEmu").parent().parent().find(".active").removeClass("active")
         $("#switchEmu").parent().addClass("active")
@@ -646,8 +659,10 @@ $ ->
         cls[current].reinit()
         resize()
 
-    if window.location.hash == "#disasm"
+    if HashSearch.keyExists("disasm")
         $("#switchDis").click()
+    else
+        $("#switchEmu").click()
 
 
     $(window).resize resize
