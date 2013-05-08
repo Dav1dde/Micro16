@@ -22,6 +22,33 @@ IDpza2lwClI3PC1SNysoLTEpCmdvdG8gLnN0YXJ0bG9vcApSNjwtUjYrUjYgOmVuZGxvb3AKUjY8
 LVI2KzEKTUFSPC1SNgpNQlI8LVI4O3dyICMgV3JpdGUgcmVzdWx0IHRvIFJhbSAoYWRkcj05KQp3
 ciAjIFJhbSBuZWVkcyBhbHNvIHR3byBjeWNsZXMgdG8gd3JpdGUgZGF0YQ=="
 
+DISASM_HTML = '<div class="toolbar" class="container-fluid">
+  <div class="row-fluid">
+    <div class="span5 mrm15">
+      <div class="status">
+        <span class="label label-info">Status:</span>
+        <span class="status-text" style="color: green">Ready!</span>
+      </div>
+    </div>
+    <div class="span7 btn-group dropdown input-prepend">
+      <a class="pull-right btn load-emu">Load into Emulator</a>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid"></div>
+
+<div class="container-fluid" class="outerc">
+  <div class="row-fluid contents">
+    <div class="span4 CodeMirror-outer mrm15" id="code-outer">
+      <textarea id="disin"></textarea>
+    </div>
+    <div class="span8 CodeMirror-outer">
+      <textarea id="disout" readonly="readonly"></textarea>
+    </div>
+  </div>
+</div>'
+
 REGISTER_TABLE = '<table class="table table-condensed" id="reg-table">
     <tr><th class="first-col">Register</th><th>Value</th></tr>
     <tr><td>0</td><td class="m16-reg-key-0">0</td></tr>
@@ -573,8 +600,7 @@ class DisassemblerMain
 # main entry point
 $ ->
     emulator = $("#outer").children()
-    disassembler = null
-    $.get("disasm.html", (data) => disassembler = $(data))
+    disassembler = $(DISASM_HTML)
 
     current = "emulator"
     cls = {emulator: new EmulatorMain()}
@@ -582,6 +608,7 @@ $ ->
 
     $("#switchDis").click =>
         if current == "disassembler" then return else current = "disassembler"
+        window.location.hash = "#disasm"
 
         $("#switchDis").parent().parent().find(".active").removeClass("active")
         $("#switchDis").parent().addClass("active")
@@ -594,6 +621,7 @@ $ ->
 
     $("#switchEmu").click =>
         if current == "emulator" then return else current = "emulator"
+        window.location.hash = ""
 
         $("#switchEmu").parent().parent().find(".active").removeClass("active")
         $("#switchEmu").parent().addClass("active")
@@ -602,6 +630,11 @@ $ ->
         $("#outer").append(emulator)
         if not cls[current] then cls[current] = new EmulatorMain()
         cls[current].reinit()
+
+    console.log window.location.hash
+
+    if window.location.hash == "#disasm"
+        $("#switchDis").click()
 
 
     resize = ->
