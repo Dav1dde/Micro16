@@ -21,6 +21,20 @@ body {
     width: 25%;
 }
 
+.span3m {
+    width: -moz-calc(23.4% + 30px) !important;
+    width: -webkit-calc(23.4% + 30px) !important;
+    width: -o-calc(23.4% + 30px) !important;
+    width: calc(23.4% + 30px) !important;
+}
+
+.span4m {
+    width: -moz-calc(32% - 40px) !important;
+    width: -webkit-calc(32% - 40px) !important;
+    width: -o-calc(32% - 40px) !important;
+    width: calc(32% - 40px) !important;
+}
+
 .toolbar {
     margin-bottom: 5px;
 }

@@ -149,10 +149,9 @@ class EmulatorMain
         @asm = CodeMirror.fromTextArea(document.getElementById('out'),
             mode: 'none',
             smartIndent: false,
-            lineNumbers: false,
+            lineNumbers: true,
             lineWrapping: false,
             readOnly: true,
-            gutter: false,
             firstLineNumber: 0)
 
     reinit: ->
@@ -212,7 +211,13 @@ class EmulatorMain
             if @code.getValue()
                 $("#share").val(location.href.replace(/#.*$/, "") + "#&inp=" + $.base64("btoa", @code.getValue()))
 
-            @asm.setValue(@parser.getFormattedIns(""))
+            @asm.setValue($.map(@parser.getFormattedIns("").replace(/\s+$/, "").split("\n"), (x, i) =>
+                    switch @unitMode
+                        when x == undefined or x == null or x.length == 0 then return ""
+                        when "decimal" then return parseInt(x, 2)
+                        when "hexadecimal" then return toHex2(parseInt(x, 2))
+                        else return x
+            ).join("\n").replace(/\s+$/, ""))
             @code.clearGutter("currentline")
             if change.text.length > 1 then @updateBreakpointLines()
             @makeMic()
@@ -565,6 +570,8 @@ class EmulatorMain
                 $(".unit-binary").html('Binary <i class="icon-ok">')
                 @convertFunc = toBin
                 @unitMode = "binary"
+
+        @code.setValue(@code.getValue()) # trigger update
 
 class DisassemblerMain
     constructor: ->
