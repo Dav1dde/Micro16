@@ -59,6 +59,15 @@ body {
     width: 10px;
 }
 
+.breakpoints {
+    width: 8px;
+}
+
+.breakpoint {
+    color: #822;
+    padding-top: 1px;
+}
+
 .mrm15 {
   margin-right: -15px;
 }
@@ -138,6 +147,24 @@ body {
 td:first-child {
     border-right: 1px solid gray;
     text-align: center;
+}
+
+.first-col-breakpoints {
+    width: 15%;
+}
+
+.last-col-breakpoints {
+    width: 25px;
+}
+
+#breakpoints-table {
+    margin-top: 15px;
+}
+
+#breakpoints-table tbody tr td span:first-child {
+    border-right: 1px solid gray;
+    padding-right: 5px;
+    margin-right: 5px;
 }
 
 .minus100 {

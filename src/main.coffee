@@ -77,8 +77,15 @@ RAM_TABLE = '<div class="ram-options">
     <tr class="m16-ram-14"><td><span>0x0000</span><span>0000000000000000</span></td><td>0000000000000000</td></tr>
     <tr class="m16-ram-15"><td><span>0x0000</span><span>0000000000000000</span></td><td>0000000000000000</td></tr>
 </table>
-<a class="btn pull-right btn-small clear-ram">Clear Ram</a>
-'
+<a class="btn pull-right btn-small clear-ram">Clear Ram</a>'
+
+BREAKPOINTS_TABLE = '<div>Click on the gutter to toggle Breakpoints.</div>
+
+<table class="table table-condensed" id="breakpoints-table">
+    <tr><th class="first-col-breakpoints">Line</th><th>Content</th><th class="last-col-breakpoints"></th></tr>
+    <tr><td></td><td></td><td></td></tr>
+</table>
+<a class="btn pull-right btn-small rm-breakpoints">Remove all</a>'
 
 EMPTY_REGISTER = ({ "0": 0, "1": 1, "-1": -1, PC: 0, R0: 0, R1: 0, R2: 0, R3: 0, R4: 0, R5: 0,
 R6: 0, R7: 0, R8: 0, R9: 0, R10: 0, AC: 0, MBR: 0, MAR: 0 })
@@ -101,7 +108,7 @@ class Main
             lineNumbers: true,
             lineWrapping: false,
             firstLineNumber: 0
-            gutters:["currentline", "CodeMirror-linenumbers"])
+            gutters:["breakpoints", "currentline", "CodeMirror-linenumbers"])
 
         @asm = window.codemirror = CodeMirror.fromTextArea(document.getElementById('out'),
             mode: 'none',
@@ -116,6 +123,8 @@ class Main
         @mic = null
         @convertFunc = null
         @updateConvertFunc("binary")
+        @breakpoints = {}
+        @lastBreak = -1
 
         @userRegister = $.extend({}, EMPTY_REGISTER)
         @lastRegister = $.extend({}, EMPTY_REGISTER)
@@ -164,7 +173,17 @@ class Main
 
             @asm.setValue(@parser.getFormattedIns(""))
             @code.clearGutter("currentline")
+            @updateBreakpointLines()
             @makeMic()
+        )
+
+        @code.on("gutterClick", (cm, n) =>
+            info = cm.lineInfo(n)
+            marker = document.createElement("div");
+            marker.innerHTML = "&bull;";
+            marker.className = "breakpoint";
+            cm.setGutterMarker(n, "breakpoints", if info.gutterMarkers?.breakpoints then null else marker);
+            @updateBreakpointLines()
         )
 
         $("#step").click =>
@@ -189,7 +208,7 @@ class Main
             $("#pause").attr("disabled", "disabled")
             $("#step").removeAttr("disabled")
             $("#run").removeAttr("disabled")
-            $(".status-text").text("Paused")
+            $(".status-text").text("Paused" + if @breakpoints[@mic.addr] then " (Breakpoint)" else "")
 
         $("#clockSpeed").keyup =>
             value = parseInt($("#clockSpeed").val())
@@ -200,13 +219,11 @@ class Main
             @mic.setSpeed(if value then value else 1)
 
 
-        @registerVisible = true
-
-        $("#btn-register").click =>
-            $("#btn-ram").parent().removeClass("active")
-            $("#btn-register").parent().removeClass("active")
-            $("#btn-register").parent().addClass("active")
-            @registerVisible = true
+        @visible = "register"
+        $(".btn-register").click =>
+            $(".btn-register").parent().parent().find(".active").removeClass("active")
+            $(".btn-register").parent().addClass("active")
+            @visible = "register"
             $("#info").children().remove()
             $("#info").append(REGISTER_TABLE)
             @updateRegistersRam()
@@ -262,11 +279,10 @@ class Main
                 @updateRegistersRam()
 
 
-        $("#btn-ram").click =>
-            $("#btn-ram").parent().removeClass("active")
-            $("#btn-register").parent().removeClass("active")
-            $("#btn-ram").parent().addClass("active")
-            @registerVisible = false
+        $(".btn-ram").click =>
+            $(".btn-ram").parent().parent().find(".active").removeClass("active")
+            $(".btn-ram").parent().addClass("active")
+            @visible = "ram"
             $("#info").children().remove()
             $("#info").append(RAM_TABLE)
             @updateRegistersRam()
@@ -335,12 +351,27 @@ class Main
                     @userRam[i] = 0
                 @updateRegistersRam()
 
+
+        $(".btn-breakpoints").click =>
+            $(".btn-breakpoints").parent().parent().find(".active").removeClass("active")
+            $(".btn-breakpoints").parent().addClass("active")
+            @visible = "breakpoints"
+            $("#info").children().remove()
+            $("#info").append(BREAKPOINTS_TABLE)
+            @updateRegistersRam()
+
+            $(".rm-breakpoints").click =>
+                @breakpoints = {}
+                @code.clearGutter("breakpoints")
+                @updateBreakpointLines()
+
+
         $(".load-example").click =>
             $("#aboutModal").modal('hide')
             @code.setValue($.base64('atob', EXAMPLE_CODE))
 
         # tab which is open by default
-        $("#btn-register").click()
+        $(".btn-register").click()
 
         $(".unit-binary").click =>
             @updateConvertFunc "binary"
@@ -359,7 +390,15 @@ class Main
         @mic.vm.register = $.extend({}, @userRegister)
         @mic.vm.ram.ram = @userRam.slice()
 
-        @mic.events.on("step", => @code.setGutterMarker(@mic.addr, "currentline", null))
+        @mic.events.on("step", =>
+            if @breakpoints[@mic.addr] and @mic.clock.started and @lastBreak != @mic.addr
+                @lastBreak = @mic.addr
+                $("#pause").click()
+                return
+            @lastBreak = -1
+
+            @code.setGutterMarker(@mic.addr, "currentline", null)
+        )
         @mic.events.on("stepped", => @updateRegistersRam())
         @mic.events.on("stop", =>
             $("#step").attr("disabled", "disabled")
@@ -384,10 +423,10 @@ class Main
 
 
     updateRegistersRam: ->
-        if @registerVisible
-            @updateRegisters()
-        else
-            @updateRam()
+        switch @visible
+            when "register" then @updateRegisters()
+            when "ram" then @updateRam()
+            when "breakpoints" then @updateBreakpoints()
 
         @code.clearGutter("currentline")
         @setGutterMark(if @mic? then @mic.addr else 0)
@@ -425,6 +464,37 @@ class Main
             $(s + " td:first-child span:nth-child(2)") .text(toBin(ii))
 
 
+    updateBreakpointLines: ->
+        @breakpoints = {}
+        @code.eachLine (handle) =>
+            info = @code.lineInfo(handle)
+            line = info.line
+
+            if info.gutterMarkers?.breakpoints
+                @breakpoints[line] = true
+
+            return
+
+        if @visible == "breakpoints"
+            @updateBreakpoints()
+
+    updateBreakpoints: ->
+        $("#breakpoints-table tbody tr:gt(1)").remove()
+
+        for key, value of @breakpoints
+            $("<tr></tr>")
+                .append($("<td></td>").text(key))
+                .append($("<td></td>").text(@code.getLineHandle(key).text))
+                .append($("<td></td>")
+                    .html('<i class="icon-remove"></i>')
+                    .click =>
+                        @code.setGutterMarker(@code.getLineHandle(key), "breakpoints", null)
+                        @updateBreakpointLines()
+                )
+                .appendTo("#breakpoints-table tbody")
+
+
+
     setGutterMark: (addr) ->
         element = document.createElement("div")
         element.innerHTML = "&rarr;"
@@ -437,13 +507,13 @@ class Main
 
         switch unit
             when "decimal"
-                $(".unit-decimal").html("Decimal <i class=\"icon-ok\">")
+                $(".unit-decimal").html('Decimal <i class="icon-ok">')
                 @convertFunc = toDecimal
             when "hexadecimal"
-                $(".unit-hexadecimal").html("Hexadecimal <i class=\"icon-ok\">")
+                $(".unit-hexadecimal").html('Hexadecimal <i class="icon-ok">')
                 @convertFunc = (inp) -> return toHex(toDecimal(inp))
             else
-                $(".unit-binary").html("Binary <i class=\"icon-ok\">")
+                $(".unit-binary").html('Binary <i class="icon-ok">')
                 @convertFunc = toBin
                 @unitMode = "binary"
 

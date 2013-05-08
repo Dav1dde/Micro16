@@ -5,9 +5,11 @@ exports = class Clock
     constructor: (@freq) ->
         @events = new Events(@)
         @paused = false
+        @started = false
 
     start: ->
         @paused = false
+        @started = true
         @update()
 
     update: ->
@@ -17,6 +19,7 @@ exports = class Clock
 
     pause: ->
         @paused = true
+        @started = false
 
     setFreq: (freq) ->
         @freq = freq

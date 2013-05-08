@@ -8,15 +8,19 @@ exports = class MIC
         @addr = 0
         @vm = new VM()
         @clock = new Clock(if freq then freq else 1)
+        @ispaused = false
 
         @events = new Events(@)
 
     step: ->
         if @isFinished() then throw { name: "MICError", message: "End of Code reached" }
+        @ispaused = false
 
         cl = @code[@addr]
 
         @events.trigger("step", cl, @addr)
+        if @ispaused
+            return
 
         @vm.step(cl, @addr)
 
@@ -37,10 +41,12 @@ exports = class MIC
     run: =>
         @clock.events.on("update", () => @step())
         @clock.start()
+        @ispaused = false
 
     pause: =>
         @clock.pause()
         @clock.events.remove()
+        @ispaused = true
 
     setSpeed: (hz) =>
         @clock.setFreq(hz)
