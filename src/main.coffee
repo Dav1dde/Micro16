@@ -617,6 +617,7 @@ $ ->
         $("#outer").append(disassembler)
         if not cls[current] then cls[current] = new DisassemblerMain()
         cls[current].reinit()
+        resize()
 
 
     $("#switchEmu").click =>
@@ -630,8 +631,7 @@ $ ->
         $("#outer").append(emulator)
         if not cls[current] then cls[current] = new EmulatorMain()
         cls[current].reinit()
-
-    console.log window.location.hash
+        resize()
 
     if window.location.hash == "#disasm"
         $("#switchDis").click()
@@ -643,6 +643,8 @@ $ ->
         $(".CodeMirror").height(height)
         $("#register").height(height5 * 3)
         $("#ram").height(height5 * 2)
+        $("#disin").height(height5 * 3)
+        $("#disout").height(height5 * 2)
 
     $(window).resize resize
     resize()
