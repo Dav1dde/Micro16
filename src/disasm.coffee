@@ -15,7 +15,7 @@ exports = class Disassembler
             lines = nb.match(/[0-9a-fA-F]{8}/g, nb)
         else
             lines = text.split('\n')
-        
+
         if lines.length > 256 then throw { name: "DisassemblerError", message: "Instructions exceeding rom (max 256)!" }
 
         $.each lines, (i, line) =>
@@ -33,9 +33,6 @@ exports = class Disassembler
         # do it the low level way!
         # this works since JS uses 32 bit integer and our instructions
         # are exactly 32 bit long!
-
-        console.log line
-
         intins = parseInt(line)
         if not (typeof line == "number")
             intins = switch

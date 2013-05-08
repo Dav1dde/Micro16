@@ -34,9 +34,10 @@ exports = class MIC
 
         @events.trigger("stepped", @vm, @addr)
 
-        if @addr == @code.length
-            @clock.pause()
+        if @addr >= @code.length
+            @pause()
             @events.trigger("stop")
+            return
 
     run: =>
         @clock.events.on("update", () => @step())
@@ -52,7 +53,7 @@ exports = class MIC
         @clock.setFreq(hz)
 
     isFinished: ->
-        return @addr == @code.length
+        return @addr >= @code.length
 
 
 

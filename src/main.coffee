@@ -154,6 +154,7 @@ class EmulatorMain
         @updateConvertFunc("binary")
         @breakpoints = {}
         @lastBreak = -1
+        @isDone = false
 
         @userRegister = $.extend({}, EMPTY_REGISTER)
         @lastRegister = $.extend({}, EMPTY_REGISTER)
@@ -227,10 +228,11 @@ class EmulatorMain
 
         $("#run").click =>
             @mic.run()
-            $("#run").attr("disabled", "disabled")
-            $("#step").attr("disabled", "disabled")
-            $("#pause").removeAttr("disabled")
-            $(".status-text").text("Running")
+            if not @isDone
+                $("#run").attr("disabled", "disabled")
+                $("#step").attr("disabled", "disabled")
+                $("#pause").removeAttr("disabled")
+                $(".status-text").text("Running")
 
         $("#pause").click =>
             @mic.pause()
@@ -430,6 +432,7 @@ class EmulatorMain
         )
         @mic.events.on("stepped", => @updateRegistersRam())
         @mic.events.on("stop", =>
+            @isDone = true
             $("#step").attr("disabled", "disabled")
             $("#run").attr("disabled", "disabled")
             $("#pause").attr("disabled", "disabled")
