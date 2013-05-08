@@ -43,8 +43,12 @@ DISASM_HTML = '<div class="toolbar" class="container-fluid">
     <div class="span4 CodeMirror-outer mrm15" id="code-outer">
       <textarea id="disin"></textarea>
     </div>
-    <div class="span8 CodeMirror-outer">
+    <div class="span6 mrm15 CodeMirror-outer">
       <textarea id="disout" readonly="readonly"></textarea>
+    </div>
+
+    <div class="span2 CodeMirror-outer">
+      <textarea id="disinhex" readonly="readonly"></textarea>
     </div>
   </div>
 </div>'
@@ -125,6 +129,10 @@ toBin = (inp) -> return (1 << 16 | (inp & 0xffff)).toString(2).slice(1)
 toHex = (inp) ->
     hex = (Number(inp) & 0xffff).toString(16)
     return "0x" + ("0000".substr(0, 4 - hex.length)) + hex.toUpperCase();
+
+toHex2 = (inp) ->
+    hex = ((Number(inp) & 0xffffffff) >>> 0).toString(16)
+    return "0x" + ("00000000".substr(0, 8 - hex.length)) + hex.toUpperCase();
 
 
 class EmulatorMain
@@ -421,6 +429,8 @@ class EmulatorMain
         if inp then @code.setValue($.base64("atob", inp))
         HashSearch.remove("inp")
 
+        @code.setValue(@code.getValue()) # trigger change
+
     makeMic: ->
         @mic = null
         @updateRegistersRam()
@@ -577,6 +587,16 @@ class DisassemblerMain
             firstLineNumber: 0
         )
 
+        @disinhex = CodeMirror.fromTextArea(document.getElementById('disinhex'),
+            mode: 'none',
+            smartIndent: false,
+            lineNumbers: true,
+            lineWrapping: false,
+            readOnly: true,
+            gutter: false,
+            firstLineNumber: 0
+        )
+
         disassembler = new Disassembler()
 
         @disin.on("change", (cm, change) =>
@@ -599,7 +619,8 @@ class DisassemblerMain
             if @disin.getValue()
                 $("#share").val(location.href.replace(/#.*$/, "") + "#disasm&inp=" + $.base64("btoa", @disin.getValue()))
 
-            @disout.setValue out.join("\n")
+            @disout.setValue out["dis"].join("\n")
+            @disinhex.setValue $.map(out["ins"], (x, i) -> toHex2(x)).join("\n")
         )
 
     reinit: ->
@@ -610,6 +631,8 @@ class DisassemblerMain
         inp = HashSearch.get("inp")
         if inp then @disin.setValue($.base64("atob", inp))
         HashSearch.remove("inp")
+
+        @disin.setValue(@disin.getValue()) # trigger change
 
 
 # main entry point
@@ -635,6 +658,7 @@ $ ->
     $("#switchDis").click =>
         if current == "disassembler" then return else current = "disassembler"
         if not HashSearch.keyExists("disasm") then HashSearch.set("disasm")
+
 
         $("#switchDis").parent().parent().find(".active").removeClass("active")
         $("#switchDis").parent().addClass("active")

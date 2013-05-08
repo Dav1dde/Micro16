@@ -17,8 +17,7 @@ body {
 }
 
 #share {
-    margin-top: 10px;
-    opacity: 100%;
+    margin: 5px 0 5px 0 !important;
     width: 25%;
 }
 

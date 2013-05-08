@@ -9,6 +9,7 @@ exports = class Disassembler
 
     disassembleLines: (text) ->
         dis = []
+        ins = []
 
         nb = text.replace(/\r?\n/g, "").replace(/\s+/g, "")
         if /^[0-9a-fA-F]+$/.test(nb) and (nb.length % 8) == 0 and not /^[0-9]+$/.test(nb)
@@ -22,11 +23,13 @@ exports = class Disassembler
             line = trim(line.replace(/\s*/g, ""))
             if not line or not line.length then line = 0
 
-            dis.push @disassemble(line, i)
+            d = @disassemble(line, i)
+            dis.push d["disasm"]
+            ins.push d["intins"]
 
             return
 
-        return dis
+        return {dis: dis, ins: ins}
 
 
     disassemble: (line, i) ->
@@ -45,7 +48,7 @@ exports = class Disassembler
         if isNaN(intins)
             throw { name: "DisassemblerError", message: "Broken opcode", line: i }
 
-        if intins == 0 then return "# Empty Line"
+        if intins == 0 then return {disasm: "# Empty Line", intins: intins}
 
         ins = {
             amux: (intins >> 31) & 1, # 1 = 01
@@ -129,7 +132,7 @@ exports = class Disassembler
             else ""
         if result.length then ret.push result
 
-        return ret.join("; ")
+        return {disasm: ret.join("; "), intins: intins}
 
 
 
