@@ -102,7 +102,7 @@ toHex = (inp) ->
 
 class EmulatorMain
     constructor: ->
-        @code = window.codemirror = CodeMirror.fromTextArea(document.getElementById('code'),
+        @code = window.cmCode = CodeMirror.fromTextArea(document.getElementById('code'),
             mode: 'micro16',
             tabSize: 4,
             smartIndent: false,
@@ -111,7 +111,7 @@ class EmulatorMain
             firstLineNumber: 0
             gutters:["breakpoints", "currentline", "CodeMirror-linenumbers"])
 
-        @asm = window.codemirror = CodeMirror.fromTextArea(document.getElementById('out'),
+        @asm = CodeMirror.fromTextArea(document.getElementById('out'),
             mode: 'none',
             smartIndent: false,
             lineNumbers: false,
@@ -120,6 +120,7 @@ class EmulatorMain
             gutter: false,
             firstLineNumber: 0)
 
+    reinit: ->
         @parser = new Parser()
         @mic = null
         @convertFunc = null
@@ -561,6 +562,12 @@ class DisassemblerMain
             @disout.setValue out.join("\n")
         )
 
+    reinit: ->
+        $(".load-emu").click =>
+            $("#switchEmu").click()
+            window.cmCode.setValue(@disout.getValue())
+            console.log "click"
+
 
 
 # main entry point
@@ -571,6 +578,7 @@ $ ->
 
     current = "emulator"
     cls = {emulator: new EmulatorMain()}
+    cls["emulator"].reinit()
 
     $("#switchDis").click =>
         if current == "disassembler" then return else current = "disassembler"
@@ -581,7 +589,7 @@ $ ->
         $("#outer").children().remove()
         $("#outer").append(disassembler)
         if not cls[current] then cls[current] = new DisassemblerMain()
-
+        cls[current].reinit()
 
 
     $("#switchEmu").click =>
@@ -593,6 +601,7 @@ $ ->
         $("#outer").children().remove()
         $("#outer").append(emulator)
         if not cls[current] then cls[current] = new EmulatorMain()
+        cls[current].reinit()
 
 
     resize = ->
