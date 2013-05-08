@@ -106,7 +106,7 @@ exports = class Parser
         ramReady = true
         for line, i in @parsedLines
             # empty lines {} are kept with a instruction of 0s
-            al = @assemble line
+            al = @assemble(line, i)
 
             if !ramReady and !al.ms
                 throw { name: "SyntaxError", message: "Ram needs time to fetch data", line: i }
@@ -115,7 +115,7 @@ exports = class Parser
 
             @assembled.push al
 
-    assemble: (ins) ->
+    assemble: (ins, i) ->
         code = { amux: 0, cond: 0, alu: 0, sh: 0, mbr: 0, mar: 0, rdwr: 0, ms: 0, ens: 0, sbus: 0, bbus: 0, abus: 0, addr: 0 }
 
         if ins["alu"]
@@ -166,7 +166,7 @@ exports = class Parser
             else 0
 
         code.addr = switch
-            when ins["target"] then @getLocation(ins["target"])
+            when ins["target"] then @getLocation(ins["target"], i)
             else 0
 
         code.rdwr = switch
@@ -179,8 +179,13 @@ exports = class Parser
 
         return code
 
-    getLocation: (target) ->
-        return parseInt(if /\.[a-zA-Z]\w+/.test(target) then @label[target.slice(1)] else target)
+    getLocation: (target, i) ->
+        addr = parseInt(if /\.[a-zA-Z]\w+/.test(target) then @label[target.slice(1)] else target)
+
+        if isNaN(addr) or not addr
+            throw { name: "SyntaxError", message: "Label \"" + target + "\" not found", line: i }
+
+        return addr
 
     getFormattedIns: (join) ->
         ret = ""

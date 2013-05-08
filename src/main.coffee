@@ -1,4 +1,5 @@
 Parser = require 'parser'
+Disassembler = require 'disasm'
 
 EXAMPLE_CODE = "
 IyMjIE11bHRpcGxpY2F0aW9uIG9mIHR3byBudW1iZXJzCiMgVmFsdWVzIGFyZSBsb2FkZWQgZnJv
@@ -99,7 +100,7 @@ toHex = (inp) ->
     return "0x" + ("0000".substr(0, 4 - hex.length)) + hex.toUpperCase();
 
 
-class Main
+class EmulatorMain
     constructor: ->
         @code = window.codemirror = CodeMirror.fromTextArea(document.getElementById('code'),
             mode: 'micro16',
@@ -161,7 +162,7 @@ class Main
                 $("#pause").attr("disabled", "disabled")
                 $("#reset").attr("disabled", "disabled")
 
-                $(".status-text").text(error.message + (if error.line then " | At line: " + error.line else ""))
+                $(".status-text").text(error.message + (if error.line != undefined then " | At line: " + error.line else ""))
                 $(".status-text").css("color", "red")
 
 
@@ -517,10 +518,82 @@ class Main
                 @convertFunc = toBin
                 @unitMode = "binary"
 
+class DisassemblerMain
+    constructor: ->
+        @disin = CodeMirror.fromTextArea(document.getElementById('disin'),
+            mode: 'none',
+            tabSize: 4,
+            smartIndent: false,
+            lineNumbers: true,
+            lineWrapping: false,
+            firstLineNumber: 0
+        )
+
+        @disout = CodeMirror.fromTextArea(document.getElementById('disout'),
+            mode: 'micro16',
+            smartIndent: false,
+            lineNumbers: true,
+            lineWrapping: false,
+            readOnly: true,
+            gutter: false,
+            firstLineNumber: 0
+        )
+
+        disassembler = new Disassembler()
+
+        @disin.on("change", (cm, change) =>
+            $(".status-text").text("Everything fine!")
+            $(".status-text").css("color", "green")
+
+            out = null
+            try
+                out = disassembler.disassembleLines(@disin.getValue())
+            catch error
+                if error.name != "DisassemblerError" then throw error
+
+                @disout.setValue("")
+
+                $(".status-text").text(error.message + (if error.line != undefined then " | At line: " + error.line else ""))
+                $(".status-text").css("color", "red")
+
+                return
+
+            @disout.setValue out.join("\n")
+        )
+
+
 
 # main entry point
 $ ->
-    main = new Main()
+    emulator = $("#outer").children()
+    disassembler = null
+    $.get("disasm.html", (data) => disassembler = $(data))
+
+    current = "emulator"
+    cls = {emulator: new EmulatorMain()}
+
+    $("#switchDis").click =>
+        if current == "disassembler" then return else current = "disassembler"
+
+        $("#switchDis").parent().parent().find(".active").removeClass("active")
+        $("#switchDis").parent().addClass("active")
+
+        $("#outer").children().remove()
+        $("#outer").append(disassembler)
+        if not cls[current] then cls[current] = new DisassemblerMain()
+
+
+
+    $("#switchEmu").click =>
+        if current == "emulator" then return else current = "emulator"
+
+        $("#switchEmu").parent().parent().find(".active").removeClass("active")
+        $("#switchEmu").parent().addClass("active")
+
+        $("#outer").children().remove()
+        $("#outer").append(emulator)
+        if not cls[current] then cls[current] = new EmulatorMain()
+
 
     resize = ->
         height = $(window).height() - 120
