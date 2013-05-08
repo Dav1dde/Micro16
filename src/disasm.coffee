@@ -10,11 +10,16 @@ exports = class Disassembler
     disassembleLines: (text) ->
         dis = []
 
-        lines = text.split('\n')
+        nb = text.replace(/\r?\n/g, "").replace(/\s+/g, "")
+        if /^[0-9a-fA-F]+$/.test(nb) and (nb.length % 8) == 0
+            lines = nb.match(/[0-9a-fA-F]{8}/g, nb)
+        else
+            lines = text.split('\n')
+        
         if lines.length > 256 then throw { name: "DisassemblerError", message: "Instructions exceeding rom (max 256)!" }
 
         $.each lines, (i, line) =>
-            line = trim(line)
+            line = trim(line.replace(/\s*/g, ""))
             if not line or not line.length then line = 0
 
             dis.push @disassemble(line, i)
@@ -28,6 +33,8 @@ exports = class Disassembler
         # do it the low level way!
         # this works since JS uses 32 bit integer and our instructions
         # are exactly 32 bit long!
+
+        console.log line
 
         intins = parseInt(line)
         if not (typeof line == "number")

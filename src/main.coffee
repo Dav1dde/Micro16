@@ -606,6 +606,16 @@ $ ->
     cls = {emulator: new EmulatorMain()}
     cls["emulator"].reinit()
 
+    resize = ->
+        height = $(window).height() - 120
+        height5 = height / 5
+        $(".CodeMirror").height(height)
+        $("#register").height(height5 * 3)
+        $("#ram").height(height5 * 2)
+        $("#disin").height(height5 * 3)
+        $("#disout").height(height5 * 2)
+
+
     $("#switchDis").click =>
         if current == "disassembler" then return else current = "disassembler"
         window.location.hash = "#disasm"
@@ -636,15 +646,6 @@ $ ->
     if window.location.hash == "#disasm"
         $("#switchDis").click()
 
-
-    resize = ->
-        height = $(window).height() - 120
-        height5 = height / 5
-        $(".CodeMirror").height(height)
-        $("#register").height(height5 * 3)
-        $("#ram").height(height5 * 2)
-        $("#disin").height(height5 * 3)
-        $("#disout").height(height5 * 2)
 
     $(window).resize resize
     resize()
