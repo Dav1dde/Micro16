@@ -5,7 +5,7 @@
         <title>Micro16 Emulator - PtkA</title>
 
         <!-- styles -->
-        <link rel="stylesheet" href="css/style.css"></link>
+        <link rel="stylesheet" href="css/style.css" />
     </head>
     <body>
 
@@ -39,7 +39,7 @@
           <a class="brand">Micro16 - PtokA <span id="dav1dde">Dav1dde</span></a>
           <div class="nav-collapse collapse">
             <ul class="nav">
-              <li class="active"><a>Home</a></li>
+              <li class="active"><a>Emu</a></li>
               <li><a data-toggle="modal" data-target="#aboutModal" href="#aboutModal" id="about">About</a></li>
             </ul>
           </div>
@@ -47,56 +47,57 @@
       </div>
     </div>
 
-    <div id="toolbar" class="container-fluid">
-      <div class="row-fluid">
-        <div class="span5 mrm15">
-          <div class="status">
-            <span class="label label-info">Status:</span>
-            <span class="status-text" style="color: green">Ready!</span>
+    <div id="outer">
+      <div id="toolbar" class="container-fluid">
+        <div class="row-fluid">
+          <div class="span5 mrm15">
+            <div class="status">
+              <span class="label label-info">Status:</span>
+              <span class="status-text" style="color: green">Ready!</span>
+            </div>
+          </div>
+          <div class="span7 btn-group dropdown input-prepend">
+            <button class="btn" id="run" disabled="disabled"><i class="icon-play"></i> Run</button>
+            <button class="btn" id="step" disabled="disabled"><i class="icon-step-forward"></i> Step</button>
+            <button class="btn" id="pause" disabled="disabled"><i class="icon-pause"></i> Pause</button>
+            <button class="btn" id="reset" disabled="disabled"><i class="icon-repeat"></i> Reset</button>
+
+            <button class="dropdown-toggle btn" data-toggle="dropdown">
+              <i class="icon-question-sign"></i> Unit <span class="caret"></span>
+            </button>
+
+            <span class="add-on btn disabled"><i class="icon-time"></i> Speed</span>
+            <input type="number" min="1" max="10000" id="clockSpeed" placeholder="Hz">
+
+            <ul class="dropdown-menu l290">
+              <li><a class="unit-binary">Binary <i class="icon-ok"></i></a></li>
+              <li><a class="unit-decimal">Decimal</a></li>
+              <li><a class="unit-hexadecimal">Hexadecimal</a></li>
+            </ul>
           </div>
         </div>
-        <div class="span7 btn-group dropdown input-prepend">
-          <button class="btn" id="run" disabled="disabled"><i class="icon-play"></i> Run</button>
-          <button class="btn" id="step" disabled="disabled"><i class="icon-step-forward"></i> Step</button>
-          <button class="btn" id="pause" disabled="disabled"><i class="icon-pause"></i> Pause</button>
-          <button class="btn" id="reset" disabled="disabled"><i class="icon-repeat"></i> Reset</button>
+      </div>
 
-          <button class="dropdown-toggle btn" data-toggle="dropdown">
-            <i class="icon-question-sign"></i> Unit <span class="caret"></span>
-          </button>
+      <div class="container-fluid"></div>
 
-          <span class="add-on btn disabled"><i class="icon-time"></i> Speed</span>
-          <input type="number" min="1" max="10000" id="clockSpeed" placeholder="Hz">
-
-
-          <ul class="dropdown-menu l290" role="menu" aria-labelledby="dLabel">
-            <li><a class="unit-binary">Binary <i class="icon-ok"></i></a></li>
-            <li><a class="unit-decimal">Decimal</a></li>
-            <li><a class="unit-hexadecimal">Hexadecimal</a></li>
-          </ul>
-        </div>
-
+      <div class="container-fluid" id="outerc">
+        <div class="row-fluid contents">
+          <div class="span5 CodeMirror-outer mrm15" id="code-outer">
+            <textarea id="code"></textarea>
+          </div>
+          <div class="span3 CodeMirror-outer">
+            <textarea id="out" readonly="readonly"></textarea>
+          </div>
+          <div class="span4">
+            <ul class="nav nav-tabs">
+              <li class="active"><a id="btn-register">Register</a></li>
+              <li class=""><a id="btn-ram">Ram</a></li>
+              <li class=""><a>Breakpoints</a></li>
+            </ul>
+            <div id="info"></div>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="container-fluid"></div>
-
-    <div class="container-fluid" id="outerc">
-      <div class="row-fluid contents">
-        <div class="span5 CodeMirror-outer mrm15" id="code-outer">
-          <textarea id="code"></textarea>
-        </div>
-        <div class="span3 CodeMirror-outer">
-          <textarea id="out" readonly="readonly"></textarea>
-        </div>
-        <div class="span4">
-          <ul class="nav nav-tabs">
-            <li class="active"><a id="btn-register">Register</a></li>
-            <li class=""><a id="btn-ram">Ram</a></li>
-            <li class=""><a>Breakpoints</a></li>
-          </ul>
-          <div id="info"></div>
-        </div>
     </div>
 
     <!-- Move JS to the bottom to speed up page loading speeds -->
