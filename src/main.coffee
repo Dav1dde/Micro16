@@ -573,7 +573,7 @@ class EmulatorMain
         @asm.setValue($.map(@parser.getFormattedIns("").replace(/\s+$/, "").split("\n"), (x, i) =>
                 switch @unitMode
                     when x == undefined or x == null or x.length == 0 then return ""
-                    when "decimal" then return parseInt(x, 2)
+                    when "decimal" then return x
                     when "hexadecimal" then return toHex2(parseInt(x, 2))
                     else return x
         ).join("\n").replace(/\s+$/, ""))
