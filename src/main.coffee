@@ -193,6 +193,8 @@ class EmulatorMain
             catch error
                 if error.name != "SyntaxError" then throw error
 
+                #console.log error
+
                 $("#run").attr("disabled", "disabled")
                 $("#step").attr("disabled", "disabled")
                 $("#pause").attr("disabled", "disabled")

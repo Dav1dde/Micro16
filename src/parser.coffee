@@ -9,14 +9,16 @@ printBin = (num, length) ->
     return ret
 
 
+toUpperCaseSafe = (inp) -> if typeof inp == "string" then inp.toUpperCase() else inp
+
 
 WRITE_REGISTER = ["PC", "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10", "AC", "MAR", "MBR"]
 READ_REGISTER = ["0", "1", "-1"].concat(WRITE_REGISTER)
 
 LABEL_RE = /:(\w+)$/
-REGISTER_RE = /\s*(R10|R\d|PC|AC|MAR|MBR)\s*/
-ALU_RE = /(lsh|rsh\()?\(?(~)?(R10|R\d|PC|AC|MBR|\-?1|0)\s*([+,&])?\s*\(?(R10|R\d|PC|AC|MBR|\-?1|0)?\)?\)?/
-GOTO_RE = /^(?:if\s+(N|Z))?\s*goto\s+(\d+|\.[a-zA-Z]\w+)$/
+REGISTER_RE = /^\s*(R10|R\d|PC|AC|MAR|MBR)\s*$/i
+ALU_RE = /^(lsh|rsh\()?\(?(~)?(R10|R\d|PC|AC|MBR|\-?1|0)\s*([+,&])?\s*\(?(R10|R\d|PC|AC|MBR|\-?1|0)?\)?\)?$/i
+GOTO_RE = /^(?:if\s+(N|Z))?\s*goto\s+(\d+|\.[a-zA-Z]\w+)$/i
 
 exports = class Parser
     constructor: ->
@@ -57,7 +59,7 @@ exports = class Parser
                     when /(rd|wr)/.test(element) then @parseRdwr(element, i)
                     when GOTO_RE.test(element) then @parseGoto(element, i)
                     when ALU_RE.test(element) then @parseAlu(element, i)
-                    else throw { name: "SyntaxError", message: "SyntaxError", line: i }
+                    else throw { name: "SyntaxError", message: "SyntaxError", line: i, more: element}
 
                 $.extend(ins, tmp)
 
@@ -69,7 +71,14 @@ exports = class Parser
     parseLoad: (element, line) ->
         s = element.split(/<-/)
         if s.length != 2 then throw { name: "SyntaxError", message: "More than one <- found", line: line }
-        write = trim(s[0])
+
+        if not REGISTER_RE.test(s[0])
+            throw { name: "SyntaxError", message: "Unkown register", line: line }
+
+        if not ALU_RE.test(s[1])
+            throw { name: "SyntaxError", message: "Malformed ALU operation", line: line }
+
+        write = toUpperCaseSafe(trim(s[0]))
         if !contains(write, WRITE_REGISTER) then throw { name: "SyntaxError", message: "Unknown register", line: line }
 
         alu = @parseAlu s[1], line
@@ -80,22 +89,24 @@ exports = class Parser
 
     parseAlu: (element, line) ->
         alu = element.match(ALU_RE)
-        if !alu then throw { name: "SyntaxError", message: "Unable to parse expression", line: line }
+        if !alu then throw { name: "SyntaxError", message: "Unable to parse ALU operation", line: line }
         if alu[2] and (alu[4] or alu[5]) then throw { name: "SyntaxError", message: "Only one operation allowed", line: line }
 
         shift = if alu[1] then alu[1].toLowerCase() else undefined
         alu_op = if alu[2] then alu[2] else alu[4]
         alu_op = if alu_op then alu_op else "="
 
-        if contains(alu_op, ["&", "+"]) && !alu[5] then throw { name: "SyntaxError", message: "Need seconds register", line: line }
+        if contains(alu_op, ["&", "+"]) and !alu[5] then throw { name: "SyntaxError", message: "Need second register for ALU operation", line: line }
+        if alu_op == "=" and alu[5] then throw { name: "SyntaxError", message: "Invalid ALU operation", line: line }
 
-        return { alu : { A: alu[3], B: alu[5], op: alu_op }, shift: shift}
+
+        return { alu : { A: toUpperCaseSafe(alu[3]), B: toUpperCaseSafe(alu[5]), op: alu_op }, shift: shift}
 
     parseGoto: (element, line) ->
         g = element.match(GOTO_RE)
         if !g then throw { name: "SyntaxError", message: "Malformed goto", line: line }
 
-        return { target: g[2], condition: g[1] }
+        return { target: g[2], condition: toUpperCaseSafe(g[1]) }
 
 
     parseRdwr: (element, line) ->
@@ -109,7 +120,7 @@ exports = class Parser
             al = @assemble(line, i)
 
             if !ramReady and !al.ms
-                throw { name: "SyntaxError", message: "Ram needs time to fetch data", line: i }
+                throw { name: "SyntaxError", message: "RAM needs time to fetch data", line: i }
 
             if al.ms then ramReady = !ramReady
 
@@ -182,7 +193,7 @@ exports = class Parser
     getLocation: (target, i) ->
         addr = parseInt(if /\.[a-zA-Z]\w+/.test(target) then @label[target.slice(1)] else target)
 
-        if isNaN(addr) or not addr
+        if isNaN(addr) or addr == undefined or addr == null
             throw { name: "SyntaxError", message: "Label \"" + target + "\" not found", line: i }
 
         return addr
