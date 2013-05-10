@@ -23,7 +23,7 @@ exports = class Disassembler
 
         radix = switch
             when /^[01]+$/.test(nb) then 2
-            when /^[0-9]+$/.test(nb) then 10
+            #when /^[0-9]+$/.test(nb) then 10
             when /^(?:[0-9a-fA-F]{8})+$/.test(nb) then 16
             when /^(?:0x[0-9a-fA-F]{8})+$/.test(nb) then 16
             else throw { name: "DisassemblerError", message: "Ambiguous opcode format." }
@@ -51,7 +51,7 @@ exports = class Disassembler
             if not (typeof line == "number")
                 intins = switch
                     when /^[01]+$/.test(line) then parseInt(line, 2)
-                    when /^[0-9]+$/.test(line) then parseInt(line, 10)
+                    #when /^[0-9]+$/.test(line) then parseInt(line, 10)
                     #when /^[0-9a-fA-F]{8}$/.test(line) then parseInt(line, 16)
                     when /^(?:0x)?[0-9a-fA-F]{8}$/.test(line) then parseInt(line, 16)
                     else throw { name: "DisassemblerError", message: "Broken opcode", line: i }
