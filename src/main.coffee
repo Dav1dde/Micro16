@@ -213,13 +213,7 @@ class EmulatorMain
             if @code.getValue()
                 $("#share").val(location.href.replace(/#.*$/, "") + "#&inp=" + $.base64("btoa", @code.getValue()))
 
-            @asm.setValue($.map(@parser.getFormattedIns("").replace(/\s+$/, "").split("\n"), (x, i) =>
-                    switch @unitMode
-                        when x == undefined or x == null or x.length == 0 then return ""
-                        when "decimal" then return parseInt(x, 2)
-                        when "hexadecimal" then return toHex2(parseInt(x, 2))
-                        else return x
-            ).join("\n").replace(/\s+$/, ""))
+            @setValueAsm()
             @code.clearGutter("currentline")
             if change.text.length > 1 then @updateBreakpointLines()
             @makeMic()
@@ -573,7 +567,17 @@ class EmulatorMain
                 @convertFunc = toBin
                 @unitMode = "binary"
 
-        @code.setValue(@code.getValue()) # trigger update
+        @setValueAsm()
+
+    setValueAsm: ->
+        @asm.setValue($.map(@parser.getFormattedIns("").replace(/\s+$/, "").split("\n"), (x, i) =>
+                switch @unitMode
+                    when x == undefined or x == null or x.length == 0 then return ""
+                    when "decimal" then return parseInt(x, 2)
+                    when "hexadecimal" then return toHex2(parseInt(x, 2))
+                    else return x
+        ).join("\n").replace(/\s+$/, ""))
+
 
 class DisassemblerMain
     constructor: ->
