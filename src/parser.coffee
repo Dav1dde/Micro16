@@ -18,7 +18,7 @@ READ_REGISTER = ["0", "1", "-1"].concat(WRITE_REGISTER)
 LABEL_RE = /:(\w+)$/
 REGISTER_RE = /^\s*(R10|R\d|PC|AC|MAR|MBR)\s*$/i
 ALU_RE = /^(lsh|rsh\()?\(?(~)?(R10|R\d|PC|AC|MBR|\-?1|0)\s*([+,&])?\s*\(?(R10|R\d|PC|AC|MBR|\-?1|0)?\)?\)?$/i
-GOTO_RE = /^(?:if\s+(N|Z))?\s*goto\s+(\d+|\.[a-zA-Z]\w+)$/i
+GOTO_RE = /^(?:if\s+(N|Z))?\s*goto\s+(\d+|\.\w+)$/i
 
 exports = class Parser
     constructor: ->
@@ -191,7 +191,7 @@ exports = class Parser
         return code
 
     getLocation: (target, i) ->
-        addr = parseInt(if /\.[a-zA-Z]\w+/.test(target) then @label[target.slice(1)] else target)
+        addr = parseInt(if /\.\w+/.test(target) then @label[target.slice(1)] else target)
 
         if isNaN(addr) or addr == undefined or addr == null
             throw { name: "SyntaxError", message: "Label \"" + target + "\" not found", line: i }
