@@ -11,7 +11,6 @@ printBin = (num, length) ->
 
 toUpperCaseSafe = (inp) -> if typeof inp == "string" then inp.toUpperCase() else inp
 
-
 WRITE_REGISTER = ["PC", "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10", "AC", "MAR", "MBR"]
 READ_REGISTER = ["0", "1", "-1"].concat(WRITE_REGISTER)
 
@@ -34,7 +33,7 @@ exports = class Parser
 
         $.each lines, (i, line) =>
             origLine = line;
-            line = trim(line.replace(/#.*/g, ""))
+            line = trim(line.replace(/#.*/g, "").replace(/;\s*$/g, ""))
 
             # Remove labels, labels must be at the end!
             if LABEL_RE.test(line)
@@ -61,7 +60,13 @@ exports = class Parser
                     when ALU_RE.test(element) then @parseAlu(element, i)
                     else throw { name: "SyntaxError", message: "SyntaxError", line: i, more: element}
 
-                $.extend(ins, tmp)
+                console.log tmp
+
+                for key, value of tmp
+                    if not ins[key]
+                        ins[key] = value
+                    else
+                        throw { name: "SyntaxError", message: "Multiple operations of same type", line: i, more: element }
 
             @lines.push origLine
             @parsedLines.push ins
@@ -71,6 +76,8 @@ exports = class Parser
     parseLoad: (element, line) ->
         s = element.split(/<-/)
         if s.length != 2 then throw { name: "SyntaxError", message: "More than one <- found", line: line }
+        s[0] = trim(s[0])
+        s[1] = trim(s[1])
 
         if not REGISTER_RE.test(s[0])
             throw { name: "SyntaxError", message: "Unkown register", line: line }
@@ -78,7 +85,7 @@ exports = class Parser
         if not ALU_RE.test(s[1])
             throw { name: "SyntaxError", message: "Malformed ALU operation", line: line }
 
-        write = toUpperCaseSafe(trim(s[0]))
+        write = toUpperCaseSafe(s[0])
         if !contains(write, WRITE_REGISTER) then throw { name: "SyntaxError", message: "Unknown register", line: line }
 
         alu = @parseAlu s[1], line

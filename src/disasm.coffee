@@ -61,7 +61,7 @@ exports = class Disassembler
         if isNaN(intins)
             throw { name: "DisassemblerError", message: "Broken opcode", line: i }
 
-        if intins == 0 then return {disasm: "# Empty Line", intins: intins}
+        if intins == 0 then return {disasm: "", intins: intins}
 
         ins = {
             amux: (intins >> 31) & 1, # 1 = 01
@@ -79,19 +79,26 @@ exports = class Disassembler
             addr: intins & 255 # 255 = 0xff = 11111111
         }
 
+        pre = ""
+        ret = []
+
         A = switch
             when ins.amux then "MBR"
             else READ_REGISTER[ins.abus]
 
         B = READ_REGISTER[ins.bbus]
 
+        # more of a hack...
+        if ins.mar and ins.mbr and ins.ms and not ins.ens
+            pre = "MBR <- " + A + "\n"
+
         if ins.mar
             A = B
             B = "0"
 
         S = switch
-            when ins.mbr then "MBR"
             when ins.mar then "MAR"
+            when ins.mbr then "MBR"
             when ins.sbus and ins.ens then READ_REGISTER[ins.sbus]
             else undefined
 
@@ -115,8 +122,6 @@ exports = class Disassembler
 
         addr = ins.addr
 
-        ret = []
-
         result = switch
             when ins.alu == 0 then A
             when ins.alu == 1 or ins.alu == 2 and B then A + op + B
@@ -126,7 +131,7 @@ exports = class Disassembler
         if ins.sh then result = shift + "(" + result + ")"
 
         result = switch
-            when S then result = S + "<-" + result
+            when S then result = S + " <- " + result
             when result.length then result = "(" + result + ")"
             else ""
         # "(0)" if: "goto X"
@@ -145,7 +150,7 @@ exports = class Disassembler
             else ""
         if result.length then ret.push result
 
-        return {disasm: ret.join("; "), intins: intins}
+        return {disasm: pre + ret.join("; "), intins: intins}
 
 
 
